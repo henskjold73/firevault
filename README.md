@@ -48,6 +48,7 @@ npm run commit
 npm run snapshot
 npm run changes
 npm run history -- users/abc123
+npm run restore-preview -- users/abc123 --from HEAD~3
 ```
 
 Equivalent direct commands:
@@ -59,6 +60,7 @@ npx tsx src/index.ts commit
 npx tsx src/index.ts snapshot
 npx tsx src/index.ts changes
 npx tsx src/index.ts history users/abc123
+npx tsx src/index.ts restore-preview users/abc123 --from HEAD~3
 ```
 
 ## Configuration
@@ -170,6 +172,13 @@ npm run history -- firestore-backups/users/abc123.json
 npm run history -- users
 ```
 
+Preview restoring a backed-up document from Git:
+
+```bash
+npm run restore-preview -- users/abc123 --from HEAD~3
+npm run restore-preview -- firestore-backups/users/abc123.json --from a1b2c3d
+```
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -230,6 +239,10 @@ Without options it inspects working tree changes. With `--last 24h`, it uses Git
 
 Output includes commit short SHA, commit date, and commit message. For collection paths, it also includes the number of files changed by each commit under that collection. It uses Git history only and does not contact Firebase.
 
+`firevault restore-preview <path> --from <commit>` shows what would be restored for one backed-up document without writing anything. It accepts logical document paths and full backup file paths, reads the source JSON from Git, compares it to the current local backup file if present, and prints a readable line diff.
+
+Restore preview is intentionally dry-run only. It does not write to Firestore, does not overwrite local files, does not push, and does not contact Firebase.
+
 ## Product Principles
 
 Firevault should stay:
@@ -244,7 +257,7 @@ Avoid adding SaaS features, hosted infrastructure, auth systems, collaboration f
 
 ## Safety
 
-Restore features are not implemented yet. When added, restore flows should:
+Actual restore features are not implemented yet. When added, restore flows should:
 
 - default to dry-run,
 - require explicit confirmation for writes,

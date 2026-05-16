@@ -1,4 +1,3 @@
-import path from "node:path";
 import { Command } from "commander";
 import { ConfigError, loadConfig } from "../config/loadConfig.js";
 import {
@@ -7,44 +6,7 @@ import {
   assertInsideGitRepository,
   getHistory,
 } from "../git/git.js";
-
-interface NormalizedHistoryPath {
-  path: string;
-  isCollection: boolean;
-}
-
-function normalizeSlashes(value: string): string {
-  return value.replaceAll("\\", "/").replace(/^\.?\//, "").replace(/\/+$/, "");
-}
-
-function normalizeHistoryPath(input: string, outputDir: string): NormalizedHistoryPath {
-  const normalizedInput = normalizeSlashes(input);
-  const normalizedOutputDir = normalizeSlashes(outputDir);
-
-  if (
-    normalizedInput === normalizedOutputDir ||
-    normalizedInput.startsWith(`${normalizedOutputDir}/`)
-  ) {
-    return {
-      path: normalizedInput,
-      isCollection: !normalizedInput.endsWith(".json"),
-    };
-  }
-
-  const parts = normalizedInput.split("/");
-
-  if (parts.length === 1) {
-    return {
-      path: path.posix.join(normalizedOutputDir, parts[0]),
-      isCollection: true,
-    };
-  }
-
-  return {
-    path: path.posix.join(normalizedOutputDir, parts[0], `${parts.slice(1).join("/")}.json`),
-    isCollection: false,
-  };
-}
+import { normalizeHistoryPath } from "../paths/backupPaths.js";
 
 function printHistory(entries: HistoryEntry[]): void {
   for (const entry of entries) {

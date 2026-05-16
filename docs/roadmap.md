@@ -18,6 +18,7 @@ Status:
 - Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
 - File-level change inspection exists through `changes` and `changes --last <window>`.
 - Document and collection history inspection exists through `history <path>`.
+- Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
 
 Next work:
 
@@ -38,6 +39,7 @@ Expected capabilities:
 - Local Git snapshot command for backup plus scoped commit.
 - Git status integration showing changed, added, and deleted backup files.
 - History helpers for document and collection paths.
+- Restore preview helpers for document paths.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
 - Basic change inspection workflows.
@@ -50,6 +52,7 @@ firevault backup
 firevault commit
 firevault snapshot
 firevault history users/abc123
+firevault restore-preview users/abc123 --from HEAD~3
 firevault diff users/abc123
 firevault changes
 ```

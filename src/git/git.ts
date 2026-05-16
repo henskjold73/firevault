@@ -190,6 +190,14 @@ export function getHistory(path: string, includeChangedFileCount: boolean): Hist
   return entries;
 }
 
+export function showFileAtCommit(commit: string, path: string): string {
+  try {
+    return runGit(["show", `${commit}:${path}`]);
+  } catch {
+    throw new GitError(`File not found at ${commit}: ${path}`);
+  }
+}
+
 export function stagePath(path: string): void {
   runGit(["add", "--", path]);
 }
