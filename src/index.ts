@@ -5,6 +5,7 @@ import { initCommand } from "./commands/init.js";
 import { backupCommand } from "./commands/backup.js";
 import { commitCommand } from "./commands/commit.js";
 import { snapshotCommand } from "./commands/snapshot.js";
+import { changesCommand } from "./commands/changes.js";
 
 const program = new Command();
 
@@ -17,5 +18,6 @@ program.addCommand(initCommand);
 program.addCommand(backupCommand);
 program.addCommand(commitCommand);
 program.addCommand(snapshotCommand);
+program.addCommand(changesCommand);
 
 program.parse();

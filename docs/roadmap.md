@@ -16,6 +16,7 @@ Status:
 - Backup command exports configured collections.
 - Documents are written one file per document.
 - Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
+- File-level change inspection exists through `changes` and `changes --last <window>`.
 
 Next work:
 

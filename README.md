@@ -46,6 +46,7 @@ npm run init
 npm run backup
 npm run commit
 npm run snapshot
+npm run changes
 ```
 
 Equivalent direct commands:
@@ -55,6 +56,7 @@ npx tsx src/index.ts init
 npx tsx src/index.ts backup
 npx tsx src/index.ts commit
 npx tsx src/index.ts snapshot
+npx tsx src/index.ts changes
 ```
 
 ## Configuration
@@ -146,6 +148,18 @@ npm run snapshot
 
 `firevault snapshot` runs `firevault backup` first, then `firevault commit` only if backup succeeds.
 
+Inspect current backup file changes:
+
+```bash
+npm run changes
+```
+
+Inspect committed backup file changes from recent history:
+
+```bash
+npx tsx src/index.ts changes --last 24h
+```
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -183,6 +197,24 @@ Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this
 - commits backup changes when files changed,
 - exits successfully when backup succeeds but no Git changes exist,
 - never pushes.
+
+`firevault changes` shows a file-level Git summary for the configured `outputDir` only:
+
+```txt
+Added:
+
+* firestore-backups/users/abc123.json
+
+Modified:
+
+* firestore-backups/users/def456.json
+
+Deleted:
+
+* firestore-backups/users/old-user.json
+```
+
+Without options it inspects working tree changes. With `--last 24h`, it uses Git history and lists files changed under `outputDir` in commits since that time window. It does not contact Firebase.
 
 ## Product Principles
 
