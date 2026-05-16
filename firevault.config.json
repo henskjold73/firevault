@@ -1,6 +1,6 @@
 {
-  "projectId": "your-firebase-project-id",
+  "projectId": "tastery-feccb",
   "serviceAccountPath": "./serviceAccountKey.json",
   "outputDir": "firestore-backups",
-  "collections": []
+  "collections": ["ratings"]
 }

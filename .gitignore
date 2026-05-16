@@ -29,3 +29,6 @@ logs/
 
 # Misc
 .cache/
+
+serviceAccountKey.json
+firestore-backups/
