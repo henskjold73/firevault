@@ -87,11 +87,5 @@ export function loadConfig(): FirevaultConfig {
     collections: requireStringArray(parsed, "collections"),
   };
 
-  if (!existsSync(config.serviceAccountPath)) {
-    throw new ConfigError(
-      `Service account file not found: ${config.serviceAccountPath}`,
-    );
-  }
-
   return config;
 }

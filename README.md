@@ -44,6 +44,7 @@ Run through the local TypeScript entrypoint during development:
 ```bash
 npm run init
 npm run backup
+npm run commit
 ```
 
 Equivalent direct commands:
@@ -51,6 +52,7 @@ Equivalent direct commands:
 ```bash
 npx tsx src/index.ts init
 npx tsx src/index.ts backup
+npx tsx src/index.ts commit
 ```
 
 ## Configuration
@@ -120,6 +122,20 @@ firestore-backups/
 
 Each exported document is written as one deterministic JSON file with recursively sorted object keys.
 
+6. Commit backup changes:
+
+```bash
+npm run commit
+```
+
+`firevault commit` only stages the configured `outputDir` and creates a local Git commit with a timestamped message such as:
+
+```txt
+backup: 2026-05-16T17:00:00.000Z
+```
+
+It does not push, does not stage unrelated files, and is intentionally separate from `firevault backup`.
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -133,6 +149,20 @@ JSON output is stable:
 - object keys are sorted recursively,
 - formatting is deterministic,
 - files are intended to produce readable Git diffs.
+
+## Git Commit Flow
+
+`firevault commit` expects to run inside a Git repository.
+
+Behavior:
+
+- checks for changes under the configured `outputDir`,
+- exits successfully if no backup changes exist,
+- stages only the configured `outputDir`,
+- creates a local commit with message `backup: <ISO timestamp>`,
+- never pushes.
+
+Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this workflow or by manual Git usage.
 
 ## Product Principles
 

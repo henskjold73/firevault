@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { ConfigError, loadConfig } from "../config/loadConfig.js";
 
 let initialized = false;
@@ -10,6 +10,12 @@ export function getFirestore() {
     let serviceAccount: admin.ServiceAccount;
 
     try {
+      if (!existsSync(config.serviceAccountPath)) {
+        throw new ConfigError(
+          `Service account file not found: ${config.serviceAccountPath}`,
+        );
+      }
+
       serviceAccount = JSON.parse(
         readFileSync(config.serviceAccountPath, "utf-8"),
       ) as admin.ServiceAccount;

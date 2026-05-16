@@ -10,6 +10,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "backup": "tsx src/index.ts backup",
+    "commit": "tsx src/index.ts commit",
     "init": "tsx src/index.ts init"
   },
   "dependencies": {

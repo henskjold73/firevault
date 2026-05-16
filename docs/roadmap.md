@@ -35,6 +35,7 @@ Expected capabilities:
 
 - `firevault backup` reliably exports configured collections.
 - Clear output summary after backup.
+- Initial Git commit integration for the configured backup directory.
 - Git status integration showing changed, added, and deleted backup files.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
