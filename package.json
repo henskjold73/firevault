@@ -1,6 +1,6 @@
 {
   "name": "firevault",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.0",
   "description": "Undo button for Firestore. Git-style history, rollback, and recovery for Firestore projects.",
   "keywords": [
     "firebase",
