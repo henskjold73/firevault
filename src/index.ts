@@ -15,7 +15,7 @@ const program = new Command();
 
 program
   .name("firevault")
-  .description("Git-native backup, diff, and recovery tooling for Firestore.")
+  .description("Undo button for Firestore.")
   .version("0.1.0");
 
 program.addCommand(initCommand);

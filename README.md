@@ -41,7 +41,15 @@ npm install -g firevault
 
 Create a Firebase service account key for your Firestore project, save it as `serviceAccountKey.json`, and keep it out of Git.
 
-Create `firevault.config.json`:
+Run guided setup:
+
+```bash
+firevault init
+```
+
+`firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It also checks Git state before writing files and appends safety entries to `.gitignore`.
+
+Generated `firevault.config.json`:
 
 ```json
 {
@@ -190,6 +198,8 @@ firevault restore-preview users/abc123 --from HEAD~3
 firevault restore-local users/abc123 --from HEAD~3 --confirm
 firevault restore-firestore users/abc123 --from HEAD~3 --confirm
 ```
+
+`firevault init --yes` uses default values for non-interactive setup. `firevault init --force` allows setup with a dirty Git working tree and overwrites an existing config after warning.
 
 ## Local Development
 

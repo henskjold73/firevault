@@ -81,7 +81,23 @@ Current implementation notes:
 
 - `loadConfig` reads and parses `firevault.config.json`.
 - Firebase initialization expects `serviceAccountPath`.
-- The current `init` template should be kept aligned with the expected config shape.
+- `firevault init` guides setup, validates required fields, checks Git state before writing, and updates `.gitignore` without overwriting existing entries.
+- `firevault init --force` allows dirty Git state and config overwrite with a warning.
+- `firevault init --yes` provides a non-interactive path for tests and automation.
+
+## Init Safety
+
+`firevault init` is intentionally conservative because setup writes local project files.
+
+Behavior:
+
+- prints the Firevault identity before prompting,
+- detects whether the current directory is inside a Git repository,
+- offers `git init` when no repository exists,
+- refuses to run in a dirty Git working tree unless `--force` is provided,
+- refuses to overwrite `firevault.config.json` unless `--force` is provided,
+- appends `.gitignore` safety entries without duplicating existing lines,
+- never commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
 
 ## Firebase Access
 

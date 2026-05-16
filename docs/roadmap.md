@@ -25,6 +25,7 @@ Status:
 - CLI packaging runs from compiled `dist/index.js`.
 - npm prerelease packaging is guarded by package file whitelisting and pack verification.
 - Public GitHub release docs cover quick start, security, contributing, and issue triage.
+- Guided `firevault init` validates setup input, checks Git state, and applies `.gitignore` safety entries.
 
 Next work:
 

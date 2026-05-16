@@ -41,22 +41,30 @@ function runGit(args: string[]): string {
   }
 }
 
-export function assertInsideGitRepository(): void {
-  let result: string;
-
+export function isInsideGitRepository(): boolean {
   try {
-    result = runGit(["rev-parse", "--is-inside-work-tree"]).trim();
+    return runGit(["rev-parse", "--is-inside-work-tree"]).trim() === "true";
   } catch {
-    throw new GitError("Current directory is not inside a Git repository.");
+    return false;
   }
+}
 
-  if (result !== "true") {
+export function assertInsideGitRepository(): void {
+  if (!isInsideGitRepository()) {
     throw new GitError("Current directory is not inside a Git repository.");
   }
 }
 
+export function initGitRepository(): void {
+  runGit(["init"]);
+}
+
+export function hasWorkingTreeChanges(): boolean {
+  return runGit(["status", "--porcelain"]).trim() !== "";
+}
+
 export function hasChangesUnder(path: string): boolean {
-  return runGit(["status", "--porcelain", "--", path]).trim() !== "";
+  return runGit(["status", "--porcelain", "--ignored", "--", path]).trim() !== "";
 }
 
 function emptyFileChanges(): FileChanges {
@@ -199,7 +207,7 @@ export function showFileAtCommit(commit: string, path: string): string {
 }
 
 export function stagePath(path: string): void {
-  runGit(["add", "--", path]);
+  runGit(["add", "-f", "--", path]);
 }
 
 export function commitPath(message: string, path: string): void {
