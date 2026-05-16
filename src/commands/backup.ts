@@ -1,15 +1,25 @@
 import { Command } from "commander";
-import { loadConfig } from "../config/loadConfig.js";
+import { ConfigError, loadConfig } from "../config/loadConfig.js";
 import { exportCollection } from "../firestore/exportFirestore.js";
 
 export const backupCommand = new Command("backup")
   .description("Back up configured Firestore collections")
   .action(async () => {
-    const config = loadConfig();
+    try {
+      const config = loadConfig();
 
-    for (const collection of config.collections) {
-      await exportCollection(config.outputDir, collection);
+      for (const collection of config.collections) {
+        await exportCollection(config.outputDir, collection);
+      }
+
+      console.log("Backup complete.");
+    } catch (error) {
+      if (error instanceof ConfigError) {
+        console.error(error.message);
+        process.exitCode = 1;
+        return;
+      }
+
+      throw error;
     }
-
-    console.log("Backup complete.");
   });

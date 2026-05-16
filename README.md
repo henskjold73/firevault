@@ -75,6 +75,51 @@ Notes:
 - `collections` controls which top-level Firestore collections are exported.
 - Service account files must not be committed.
 
+Recommended `.gitignore` entries for local development:
+
+```gitignore
+serviceAccountKey.json
+firestore-backups/
+```
+
+## Local Development Flow
+
+1. Create a Firebase service account key in the Firebase Console or Google Cloud Console for the existing Firebase project.
+2. Save the downloaded key locally as `serviceAccountKey.json` in the project root.
+3. Create the Firevault config:
+
+```bash
+npm run init
+```
+
+4. Edit `firevault.config.json`:
+
+```json
+{
+  "projectId": "your-project-id",
+  "serviceAccountPath": "./serviceAccountKey.json",
+  "outputDir": "firestore-backups",
+  "collections": ["users"]
+}
+```
+
+5. Run a backup:
+
+```bash
+npm run backup
+```
+
+Expected output structure:
+
+```txt
+firestore-backups/
+  users/
+    abc123.json
+    def456.json
+```
+
+Each exported document is written as one deterministic JSON file with recursively sorted object keys.
+
 ## Backup Model
 
 Firevault writes one document per file:

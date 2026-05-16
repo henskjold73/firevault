@@ -3,6 +3,7 @@ import { writeFileSync, existsSync } from "node:fs";
 
 const defaultConfig = {
   projectId: "your-firebase-project-id",
+  serviceAccountPath: "./serviceAccountKey.json",
   outputDir: "firestore-backups",
   collections: [],
 };
