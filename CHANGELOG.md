@@ -6,6 +6,7 @@
 - Added init Git safety checks, `--force`, and `--yes`.
 - Added safe `.gitignore` updates for service account keys, backup output, and emulator logs.
 - Ensured Firevault can still explicitly commit the configured backup directory even when it is ignored by default.
+- Added a guarded local npm prerelease publish workflow using `gitversionjs`, pack verification, and forbidden-path checks.
 
 ## 0.1.0
 

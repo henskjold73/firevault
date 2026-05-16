@@ -49,6 +49,20 @@ firevault init
 
 `firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It also checks Git state before writing files and appends safety entries to `.gitignore`.
 
+After you enter a project ID, Firevault prints the direct Firebase Console URL for that project's Admin SDK service account page:
+
+```txt
+Create a Firebase service account key here:
+
+https://console.firebase.google.com/project/your-project-id/settings/serviceaccounts/adminsdk
+
+Download the JSON key and save it as:
+
+./serviceAccountKey.json
+```
+
+Firevault does not create service accounts, open a browser, run `gcloud`, or authenticate against Firebase during setup.
+
 Generated `firevault.config.json`:
 
 ```json
@@ -330,15 +344,36 @@ Covered emulator flows:
 
 ## Publishing
 
-Before publishing:
+Firevault uses a local publish script for early prereleases. npm auth must already be configured before publishing; `npm whoami` should succeed for the intended npm account.
 
-- run `npm run build`,
-- run `npm run test:emulator`,
-- run `npm pack --dry-run` and review the file list,
-- verify `dist/index.js` exists and starts with `#!/usr/bin/env node`,
-- do not publish `serviceAccountKey.json`,
-- do not publish local `firestore-backups/` output,
-- verify logs such as `firestore-debug.log` are not included.
+Calculate the Git-derived prerelease version:
+
+```bash
+npm run version:calculate
+```
+
+Verify the package without publishing:
+
+```bash
+npm run publish:dry-run
+```
+
+Publish the prerelease with the `next` dist-tag:
+
+```bash
+npm run publish:next
+```
+
+Use `npm run publish:next -- --yes` only when you intentionally want to skip the final confirmation prompt.
+
+The publish script:
+
+- requires a clean Git working tree before real publishing,
+- calculates the npm prerelease version with `gitversionjs`,
+- runs clean, build, and emulator tests,
+- runs `npm pack --dry-run --cache /private/tmp/firevault-npm-cache`,
+- rejects forbidden package contents such as `serviceAccountKey.json`, `firestore-backups/`, `firestore-debug.log`, `src/`, `test/`, `firebase.json`, `firestore.rules`, and `.env` files,
+- publishes with `npm publish --access public --tag next --cache /private/tmp/firevault-npm-cache`.
 
 The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output. `prepublishOnly` currently runs clean, build, and emulator tests.
 

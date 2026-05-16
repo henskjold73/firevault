@@ -94,10 +94,12 @@ Behavior:
 - prints the Firevault identity before prompting,
 - detects whether the current directory is inside a Git repository,
 - offers `git init` when no repository exists,
+- prints the Firebase Console Admin SDK service account URL for the entered project ID,
+- explains where to save the manually downloaded service account key,
 - refuses to run in a dirty Git working tree unless `--force` is provided,
 - refuses to overwrite `firevault.config.json` unless `--force` is provided,
 - appends `.gitignore` safety entries without duplicating existing lines,
-- never commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
+- never creates service accounts, opens browsers, runs `gcloud`, commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
 
 ## Firebase Access
 
@@ -109,7 +111,8 @@ Design constraints:
 
 - operate only on existing Firestore projects,
 - keep credentials local,
-- do not introduce hosted auth or account systems,
+- use manually managed service account credentials,
+- do not introduce credential brokerage, hosted auth, or account systems,
 - avoid committing service account files.
 
 ## Emulator Tests
@@ -131,6 +134,12 @@ Current emulator coverage:
 - single-document `restore-firestore` overwrite into emulator Firestore,
 - collection path rejection,
 - `--confirm` enforcement.
+
+## Publishing
+
+Prerelease publishing is intentionally local-script based for now. `scripts/publish.ts` calculates an npm-safe prerelease version from Git state with `gitversionjs`, verifies a clean working tree for real publishes, runs clean/build/emulator tests, inspects `npm pack --dry-run` contents, rejects known unsafe paths, and publishes with the `next` npm dist-tag only after explicit confirmation.
+
+There is no GitHub Actions publishing, trusted publishing, or release automation beyond this local guard script yet.
 
 ## Export Pipeline
 

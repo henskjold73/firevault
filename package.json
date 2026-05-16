@@ -33,6 +33,9 @@
     "clean": "rm -rf dist",
     "build": "tsc && chmod +x dist/index.js",
     "prepublishOnly": "npm run clean && npm run build && npm run test:emulator",
+    "version:calculate": "tsx scripts/publish.ts --version-only",
+    "publish:dry-run": "tsx scripts/publish.ts --dry-run --allow-dirty",
+    "publish:next": "tsx scripts/publish.ts",
     "test:emulator": "tsx test/integration/run-firestore-emulator.ts",
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",
@@ -51,6 +54,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "firebase-tools": "^15.18.0",
+    "gitversionjs": "^1.0.15",
     "tsx": "^4.20.0",
     "typescript": "^5.8.0"
   }
