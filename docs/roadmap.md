@@ -19,6 +19,7 @@ Status:
 - File-level change inspection exists through `changes` and `changes --last <window>`.
 - Document and collection history inspection exists through `history <path>`.
 - Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
+- Local backup-file recovery exists through `restore-local <path> --from <commit> --confirm`.
 
 Next work:
 
@@ -40,6 +41,7 @@ Expected capabilities:
 - Git status integration showing changed, added, and deleted backup files.
 - History helpers for document and collection paths.
 - Restore preview helpers for document paths.
+- Local document restore into backup files only.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
 - Basic change inspection workflows.
@@ -53,6 +55,7 @@ firevault commit
 firevault snapshot
 firevault history users/abc123
 firevault restore-preview users/abc123 --from HEAD~3
+firevault restore-local users/abc123 --from HEAD~3 --confirm
 firevault diff users/abc123
 firevault changes
 ```

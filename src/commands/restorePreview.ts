@@ -8,7 +8,7 @@ import {
 } from "../git/git.js";
 import { normalizeDocumentPath } from "../paths/backupPaths.js";
 
-interface RestorePreviewOptions {
+export interface RestorePreviewOptions {
   from?: string;
 }
 
@@ -20,7 +20,10 @@ function normalizeJson(content: string): string[] {
   }
 }
 
-function buildLineDiff(currentContent: string | undefined, restoredContent: string): string[] {
+export function buildLineDiff(
+  currentContent: string | undefined,
+  restoredContent: string,
+): string[] {
   const currentLines = currentContent ? normalizeJson(currentContent) : [];
   const restoredLines = normalizeJson(restoredContent);
   const lengths = Array.from({ length: currentLines.length + 1 }, () =>
@@ -79,6 +82,29 @@ function buildLineDiff(currentContent: string | undefined, restoredContent: stri
   return lines;
 }
 
+export function printRestorePreview(
+  targetPath: string,
+  sourceCommit: string,
+  currentExists: boolean,
+  diff: string[],
+): void {
+  console.log(`Target: ${targetPath}`);
+  console.log(`Source commit: ${sourceCommit}`);
+  console.log(`Current file exists: ${currentExists ? "yes" : "no"}`);
+  console.log("");
+  console.log("Diff:");
+  console.log("");
+
+  if (diff.length === 0) {
+    console.log("No changes.");
+    return;
+  }
+
+  for (const line of diff) {
+    console.log(line);
+  }
+}
+
 export function runRestorePreview(
   inputPath: string,
   options: RestorePreviewOptions,
@@ -97,21 +123,7 @@ export function runRestorePreview(
   const currentContent = currentExists ? readFileSync(targetPath, "utf-8") : undefined;
   const diff = buildLineDiff(currentContent, restoredContent);
 
-  console.log(`Target: ${targetPath}`);
-  console.log(`Source commit: ${options.from}`);
-  console.log(`Current file exists: ${currentExists ? "yes" : "no"}`);
-  console.log("");
-  console.log("Diff:");
-  console.log("");
-
-  if (diff.length === 0) {
-    console.log("No changes.");
-    return;
-  }
-
-  for (const line of diff) {
-    console.log(line);
-  }
+  printRestorePreview(targetPath, options.from, currentExists, diff);
 }
 
 export const restorePreviewCommand = new Command("restore-preview")

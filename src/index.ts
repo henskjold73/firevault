@@ -8,6 +8,7 @@ import { snapshotCommand } from "./commands/snapshot.js";
 import { changesCommand } from "./commands/changes.js";
 import { historyCommand } from "./commands/history.js";
 import { restorePreviewCommand } from "./commands/restorePreview.js";
+import { restoreLocalCommand } from "./commands/restoreLocal.js";
 
 const program = new Command();
 
@@ -23,5 +24,6 @@ program.addCommand(snapshotCommand);
 program.addCommand(changesCommand);
 program.addCommand(historyCommand);
 program.addCommand(restorePreviewCommand);
+program.addCommand(restoreLocalCommand);
 
 program.parse();
