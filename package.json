@@ -12,6 +12,7 @@
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",
     "changes": "tsx src/index.ts changes",
+    "history": "tsx src/index.ts history",
     "snapshot": "tsx src/index.ts snapshot",
     "init": "tsx src/index.ts init"
   },

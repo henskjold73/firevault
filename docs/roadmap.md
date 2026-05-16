@@ -17,6 +17,7 @@ Status:
 - Documents are written one file per document.
 - Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
 - File-level change inspection exists through `changes` and `changes --last <window>`.
+- Document and collection history inspection exists through `history <path>`.
 
 Next work:
 
@@ -36,6 +37,7 @@ Expected capabilities:
 - Clear output summary after backup.
 - Local Git snapshot command for backup plus scoped commit.
 - Git status integration showing changed, added, and deleted backup files.
+- History helpers for document and collection paths.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
 - Basic change inspection workflows.
@@ -47,6 +49,7 @@ Example commands:
 firevault backup
 firevault commit
 firevault snapshot
+firevault history users/abc123
 firevault diff users/abc123
 firevault changes
 ```

@@ -6,6 +6,13 @@ export interface FileChanges {
   deleted: string[];
 }
 
+export interface HistoryEntry {
+  shortSha: string;
+  date: string;
+  message: string;
+  changedFileCount?: number;
+}
+
 export class GitError extends Error {
   constructor(message: string) {
     super(message);
@@ -136,6 +143,51 @@ export function getHistoricalChanges(path: string, since: string): FileChanges {
   }
 
   return normalizeFileChanges(changes);
+}
+
+export function getHistory(path: string, includeChangedFileCount: boolean): HistoryEntry[] {
+  const format = "%h%x09%cs%x09%s";
+  const output = runGit(["log", `--format=${format}`, "--name-only", "--", path]);
+  const entries: HistoryEntry[] = [];
+  let current: HistoryEntry | undefined;
+  let changedFiles = new Set<string>();
+
+  function finishCurrent(): void {
+    if (!current) {
+      return;
+    }
+
+    if (includeChangedFileCount) {
+      current.changedFileCount = changedFiles.size;
+    }
+
+    entries.push(current);
+  }
+
+  for (const line of output.split("\n")) {
+    if (line.trim() === "") {
+      continue;
+    }
+
+    const parts = line.split("\t");
+
+    if (parts.length >= 3) {
+      finishCurrent();
+      current = {
+        shortSha: parts[0],
+        date: parts[1],
+        message: parts.slice(2).join("\t"),
+      };
+      changedFiles = new Set<string>();
+      continue;
+    }
+
+    changedFiles.add(line.trim());
+  }
+
+  finishCurrent();
+
+  return entries;
 }
 
 export function stagePath(path: string): void {

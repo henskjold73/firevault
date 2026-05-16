@@ -47,6 +47,7 @@ npm run backup
 npm run commit
 npm run snapshot
 npm run changes
+npm run history -- users/abc123
 ```
 
 Equivalent direct commands:
@@ -57,6 +58,7 @@ npx tsx src/index.ts backup
 npx tsx src/index.ts commit
 npx tsx src/index.ts snapshot
 npx tsx src/index.ts changes
+npx tsx src/index.ts history users/abc123
 ```
 
 ## Configuration
@@ -160,6 +162,14 @@ Inspect committed backup file changes from recent history:
 npx tsx src/index.ts changes --last 24h
 ```
 
+Show history for a backed-up document or collection:
+
+```bash
+npm run history -- users/abc123
+npm run history -- firestore-backups/users/abc123.json
+npm run history -- users
+```
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -215,6 +225,10 @@ Deleted:
 ```
 
 Without options it inspects working tree changes. With `--last 24h`, it uses Git history and lists files changed under `outputDir` in commits since that time window. It does not contact Firebase.
+
+`firevault history <path>` shows commit history for one backed-up document or collection. It accepts logical paths like `users/abc123`, full backup file paths like `firestore-backups/users/abc123.json`, and collection paths like `users`.
+
+Output includes commit short SHA, commit date, and commit message. For collection paths, it also includes the number of files changed by each commit under that collection. It uses Git history only and does not contact Firebase.
 
 ## Product Principles
 
