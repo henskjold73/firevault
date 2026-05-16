@@ -277,6 +277,30 @@ Manual Firestore restore verification:
 4. Verify the document in Firestore was overwritten with the JSON from Git.
 5. Run `git status` to confirm no local files were changed by `restore-firestore`.
 
+## Testing
+
+Run the TypeScript build:
+
+```bash
+npm run build
+```
+
+Run Firestore emulator integration tests:
+
+```bash
+npm run test:emulator
+```
+
+The emulator tests require dependencies installed through `npm install`, including the `firebase-tools` dev dependency. The test runner starts the local Firestore emulator with demo project `demo-firevault-test`; it does not require `serviceAccountKey.json` and does not contact a real Firebase project.
+
+Covered emulator flows:
+
+- `backup` exports a known Firestore document,
+- `backup` writes deterministic JSON,
+- `restore-firestore` overwrites one emulator document from a Git commit,
+- `restore-firestore` rejects collection paths,
+- `restore-firestore` requires `--confirm`.
+
 ## Product Principles
 
 Firevault should stay:

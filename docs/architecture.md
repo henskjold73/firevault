@@ -86,12 +86,34 @@ Current implementation notes:
 
 `src/firestore/firebase.ts` initializes Firebase Admin SDK from the configured service account path and returns a Firestore client.
 
+When `FIRESTORE_EMULATOR_HOST` is set, Firebase Admin initializes with only the configured `projectId`. This lets integration tests run against the local Firestore emulator without a service account file and without contacting real Firebase.
+
 Design constraints:
 
 - operate only on existing Firebase projects,
 - keep credentials local,
 - do not introduce hosted auth or account systems,
 - avoid committing service account files.
+
+## Emulator Tests
+
+Firestore emulator integration tests live under `test/integration/`.
+
+The test command:
+
+```bash
+npm run test:emulator
+```
+
+starts the Firestore emulator through `firebase-tools`, runs Node's built-in test runner through `tsx`, and uses temporary Git repositories and backup directories for each test. The tests seed emulator Firestore directly, drive the Firevault CLI, and clean up temporary directories where practical.
+
+Current emulator coverage:
+
+- backup export from emulator Firestore,
+- deterministic JSON output,
+- single-document `restore-firestore` overwrite into emulator Firestore,
+- collection path rejection,
+- `--confirm` enforcement.
 
 ## Export Pipeline
 

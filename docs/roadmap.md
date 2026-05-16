@@ -21,14 +21,14 @@ Status:
 - Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
 - Local backup-file recovery exists through `restore-local <path> --from <commit> --confirm`.
 - Single-document Firestore overwrite restore exists through `restore-firestore <path> --from <commit> --confirm`.
+- Firestore emulator integration tests cover backup and document restore safety paths.
 
 Next work:
 
-- Add deterministic serializer tests.
-- Add export tests around file layout and stable ordering.
 - Decide how to represent Firestore special value types.
 - Decide how to handle subcollections.
 - Add broader error handling around Firestore export failures.
+- Add non-emulator unit tests for pure path and Git parsing helpers.
 
 ## MVP
 

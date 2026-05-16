@@ -8,8 +8,18 @@ export function getFirestore() {
   if (!initialized) {
     const config = loadConfig();
     let serviceAccount: admin.ServiceAccount;
+    const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
 
     try {
+      if (emulatorHost) {
+        admin.initializeApp({
+          projectId: config.projectId,
+        });
+
+        initialized = true;
+        return admin.firestore();
+      }
+
       if (!existsSync(config.serviceAccountPath)) {
         throw new ConfigError(
           `Service account file not found: ${config.serviceAccountPath}`,
