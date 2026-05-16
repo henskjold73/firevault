@@ -50,6 +50,7 @@ npm run changes
 npm run history -- users/abc123
 npm run restore-preview -- users/abc123 --from HEAD~3
 npm run restore-local -- users/abc123 --from HEAD~3 --confirm
+npm run restore-firestore -- users/abc123 --from HEAD~3 --confirm
 ```
 
 Equivalent direct commands:
@@ -63,6 +64,7 @@ npx tsx src/index.ts changes
 npx tsx src/index.ts history users/abc123
 npx tsx src/index.ts restore-preview users/abc123 --from HEAD~3
 npx tsx src/index.ts restore-local users/abc123 --from HEAD~3 --confirm
+npx tsx src/index.ts restore-firestore users/abc123 --from HEAD~3 --confirm
 ```
 
 ## Configuration
@@ -188,6 +190,13 @@ npm run restore-local -- users/abc123 --from HEAD~3 --confirm
 npm run restore-local -- firestore-backups/users/abc123.json --from a1b2c3d --confirm
 ```
 
+Restore a backed-up document directly into Firestore:
+
+```bash
+npm run restore-firestore -- users/abc123 --from HEAD~3 --confirm
+npm run restore-firestore -- firestore-backups/users/abc123.json --from a1b2c3d --confirm
+```
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -256,6 +265,18 @@ Restore preview is intentionally dry-run only. It does not write to Firestore, d
 
 Restore local does not write to Firestore, does not stage, does not commit, does not push, and does not contact Firebase.
 
+`firevault restore-firestore <path> --from <commit> --confirm` restores one backed-up document from Git directly into Firestore. It prints target backup path, Firestore collection, document ID, source commit, and a local JSON diff before writing.
+
+Firestore restore overwrites the target document with the parsed JSON from Git. It does not support collection restore, merge, or patch restore yet. It does not modify local backup files, stage, commit, push, or contact GitHub.
+
+Manual Firestore restore verification:
+
+1. Point `serviceAccountPath` at a valid service account for a test Firebase project.
+2. Run `npm run restore-preview -- users/abc123 --from <commit>` and inspect the diff.
+3. Run `npm run restore-firestore -- users/abc123 --from <commit> --confirm`.
+4. Verify the document in Firestore was overwritten with the JSON from Git.
+5. Run `git status` to confirm no local files were changed by `restore-firestore`.
+
 ## Product Principles
 
 Firevault should stay:
@@ -270,7 +291,7 @@ Avoid adding SaaS features, hosted infrastructure, auth systems, collaboration f
 
 ## Safety
 
-Firestore restore features are not implemented yet. When added, restore flows should:
+Firestore restore is document-only and overwrite-only for now. Future restore flows should:
 
 - default to dry-run,
 - require explicit confirmation for writes,

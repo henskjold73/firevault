@@ -9,6 +9,7 @@ import { changesCommand } from "./commands/changes.js";
 import { historyCommand } from "./commands/history.js";
 import { restorePreviewCommand } from "./commands/restorePreview.js";
 import { restoreLocalCommand } from "./commands/restoreLocal.js";
+import { restoreFirestoreCommand } from "./commands/restoreFirestore.js";
 
 const program = new Command();
 
@@ -25,5 +26,6 @@ program.addCommand(changesCommand);
 program.addCommand(historyCommand);
 program.addCommand(restorePreviewCommand);
 program.addCommand(restoreLocalCommand);
+program.addCommand(restoreFirestoreCommand);
 
 program.parse();

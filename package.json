@@ -15,6 +15,7 @@
     "history": "tsx src/index.ts history",
     "restore-preview": "tsx src/index.ts restore-preview",
     "restore-local": "tsx src/index.ts restore-local",
+    "restore-firestore": "tsx src/index.ts restore-firestore",
     "snapshot": "tsx src/index.ts snapshot",
     "init": "tsx src/index.ts init"
   },

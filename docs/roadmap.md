@@ -20,6 +20,7 @@ Status:
 - Document and collection history inspection exists through `history <path>`.
 - Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
 - Local backup-file recovery exists through `restore-local <path> --from <commit> --confirm`.
+- Single-document Firestore overwrite restore exists through `restore-firestore <path> --from <commit> --confirm`.
 
 Next work:
 
@@ -42,6 +43,7 @@ Expected capabilities:
 - History helpers for document and collection paths.
 - Restore preview helpers for document paths.
 - Local document restore into backup files only.
+- Firestore document restore with explicit confirmation.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
 - Basic change inspection workflows.
@@ -56,6 +58,7 @@ firevault snapshot
 firevault history users/abc123
 firevault restore-preview users/abc123 --from HEAD~3
 firevault restore-local users/abc123 --from HEAD~3 --confirm
+firevault restore-firestore users/abc123 --from HEAD~3 --confirm
 firevault diff users/abc123
 firevault changes
 ```
@@ -66,8 +69,8 @@ Goal: introduce safe document-level recovery without broad destructive operation
 
 Expected capabilities:
 
-- Document-level restore from a Git revision.
-- Dry-run restore by default.
+- Safer document-level restore from a Git revision.
+- Dry-run preview before destructive restore.
 - Required confirmation for writes.
 - Diff preview before restore.
 - Better Firestore type handling.
