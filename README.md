@@ -184,6 +184,8 @@ serviceAccountKey.json
 firestore-backups/
 ```
 
+`firevault init` adds these safety entries automatically. `firestore-backups/` is ignored by default so exported Firestore data is not committed accidentally with normal Git commands. Firevault can still commit the configured backup directory explicitly through `firevault commit` or `firevault snapshot`, and it stages only that directory.
+
 ## Commands
 
 ```bash

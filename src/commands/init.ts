@@ -58,8 +58,7 @@ function validateConfig(config: InitConfig): void {
 function parseCollections(value: string): string[] {
   return value
     .split(",")
-    .map((collection) => collection.trim())
-    .filter((collection) => collection !== "");
+    .map((collection) => collection.trim());
 }
 
 async function promptForConfig(options: InitOptions): Promise<InitConfig> {

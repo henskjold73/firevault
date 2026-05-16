@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.1.0 - Unreleased
+## 0.1.1-beta.1 - Unreleased
+
+- Added guided `firevault init` setup with prompts for project ID, service account path, output directory, and collections.
+- Added init Git safety checks, `--force`, and `--yes`.
+- Added safe `.gitignore` updates for service account keys, backup output, and emulator logs.
+- Ensured Firevault can still explicitly commit the configured backup directory even when it is ignored by default.
+
+## 0.1.0
 
 Initial prerelease candidate for Firevault, an undo button for Firestore.
 
