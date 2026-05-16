@@ -1,22 +1,24 @@
 {
   "name": "firevault",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.1.0",
+  "description": "Git-native backup, diff, and recovery tooling for Firestore.",
+  "type": "module",
+  "bin": {
+    "firevault": "./src/index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "backup": "tsx src/index.ts backup",
+    "init": "tsx src/index.ts init"
+  },
   "dependencies": {
-    "commander": "^14.0.3",
-    "firebase-admin": "^13.10.0"
+    "commander": "^14.0.2",
+    "firebase-admin": "^13.5.0"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
-    "tsx": "^4.22.0",
-    "typescript": "^6.0.3"
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
   }
 }

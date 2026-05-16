@@ -1,0 +1,5 @@
+{
+  "projectId": "your-firebase-project-id",
+  "outputDir": "firestore-backups",
+  "collections": []
+}
