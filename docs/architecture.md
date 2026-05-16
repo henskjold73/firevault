@@ -1,17 +1,18 @@
 # Architecture
 
-Firevault is a CLI-first tool for exporting Firestore data into deterministic files that Git can store, diff, and roll back.
+Firevault is an undo button for Firestore: operational recovery tooling that gives Firestore projects Git-style history, change inspection, and document-level rollback.
 
 ## Positioning
 
-Firevault wraps existing Firebase projects. It does not replace Firebase and does not host data.
+Firevault wraps existing Firestore projects. It does not replace Firebase and does not host data.
 
 The architecture should optimize for:
 
-- deterministic exports,
-- readable diffs,
 - safe restores,
-- Git integration,
+- readable recovery previews,
+- document-level rollback,
+- deterministic exports,
+- Git-backed history,
 - disaster recovery workflows,
 - simple local operation.
 
@@ -90,7 +91,7 @@ When `FIRESTORE_EMULATOR_HOST` is set, Firebase Admin initializes with only the 
 
 Design constraints:
 
-- operate only on existing Firebase projects,
+- operate only on existing Firestore projects,
 - keep credentials local,
 - do not introduce hosted auth or account systems,
 - avoid committing service account files.

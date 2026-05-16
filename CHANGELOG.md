@@ -2,7 +2,7 @@
 
 ## 0.1.0 - Unreleased
 
-Initial prerelease candidate for Firevault.
+Initial prerelease candidate for Firevault, an undo button for Firestore.
 
 - Firestore backup to deterministic JSON files.
 - Git-scoped local snapshot workflow.

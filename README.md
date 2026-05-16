@@ -1,26 +1,26 @@
 # Firevault
 
-Firevault is a Git-native operational recovery tool for Firebase Firestore.
+Undo button for Firestore.
 
-> Git history and rollback for Firestore.
+Firevault gives Firestore projects Git-style history, change inspection, and document-level rollback so teams can recover from accidental writes, bad migrations, and destructive scripts.
 
-Firevault is CLI-first backup, audit, diff, rollback, and recovery tooling for existing Firebase projects. It is not a hosted database platform, Firebase replacement, generic backup vendor, SaaS product, or dashboard.
+Supporting line: Git-style history, rollback, and recovery for Firestore projects.
+
+Firevault is focused operational recovery tooling for existing Firestore projects. It is not a hosted database platform, Firebase replacement, generic backup vendor, SaaS product, or dashboard.
 
 ## Current Status
 
 Firevault is in Foundation / Phase 0.
 
-This is an experimental prerelease CLI. Use it against test or non-critical Firebase projects until backup and restore behavior has been reviewed for your project.
+This is an experimental prerelease CLI. Use it against test or non-critical Firestore projects until recovery behavior has been reviewed for your project.
 
-Implemented:
+Current scope:
 
-- TypeScript CLI setup with Commander
-- `init` command scaffold
-- `backup` command structure
-- Firebase Admin SDK initialization
-- Config loading from `firevault.config.json`
-- Stable deterministic JSON serialization
-- Firestore collection export to one JSON file per document
+- snapshot Firestore into Git-friendly JSON,
+- inspect changes,
+- view document history,
+- preview rollback,
+- restore one document back to Firestore.
 
 Current export shape:
 
@@ -31,7 +31,7 @@ firestore-backups/
     def456.json
 ```
 
-The immediate priority is making Firestore exports deterministic, readable in Git diffs, and reliable enough to become the foundation for diff and restore workflows.
+The immediate priority is trustworthy document-level recovery: clear previews, explicit confirmation, and no broad destructive restore flows.
 
 ## Install
 
@@ -264,7 +264,7 @@ Behavior:
 
 Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this workflow or by manual Git usage.
 
-`firevault snapshot` is the safe local backup workflow:
+`firevault snapshot` is the safe local recovery snapshot workflow:
 
 - runs backup,
 - stops immediately if backup fails,
@@ -346,7 +346,7 @@ Firevault should stay:
 - operational,
 - trustworthy,
 - CLI-first,
-- Git-native.
+- Git-backed.
 
 Avoid adding SaaS features, hosted infrastructure, auth systems, collaboration features, dashboards, billing, or broad multi-cloud abstractions before the core Firestore to stable JSON to Git workflow is robust.
 

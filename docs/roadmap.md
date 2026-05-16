@@ -1,10 +1,10 @@
 # Roadmap
 
-Firevault is currently in Foundation / Phase 0. The roadmap is intentionally incremental: make Firestore to stable JSON to Git robust before adding higher-level recovery workflows.
+Firevault is currently in Foundation / Phase 0. The roadmap is intentionally incremental: make the undo button for Firestore trustworthy before adding broader recovery workflows.
 
 ## Foundation
 
-Goal: reliably export configured Firestore collections to deterministic JSON files.
+Goal: provide a safe document-level recovery loop backed by deterministic local snapshots and Git history.
 
 Status:
 
@@ -35,7 +35,7 @@ Next work:
 
 ## MVP
 
-Goal: make the Git-backed backup workflow useful for real operational inspection.
+Goal: make Git-style history, inspection, and rollback useful for real Firestore recovery work.
 
 Expected capabilities:
 

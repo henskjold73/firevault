@@ -1,7 +1,7 @@
 {
   "name": "firevault",
   "version": "0.1.0",
-  "description": "Git-native backup, diff, and recovery tooling for Firestore.",
+  "description": "Undo button for Firestore. Git-style history, rollback, and recovery for Firestore projects.",
   "keywords": [
     "firebase",
     "firestore",
