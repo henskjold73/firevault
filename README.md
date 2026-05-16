@@ -45,6 +45,7 @@ Run through the local TypeScript entrypoint during development:
 npm run init
 npm run backup
 npm run commit
+npm run snapshot
 ```
 
 Equivalent direct commands:
@@ -53,6 +54,7 @@ Equivalent direct commands:
 npx tsx src/index.ts init
 npx tsx src/index.ts backup
 npx tsx src/index.ts commit
+npx tsx src/index.ts snapshot
 ```
 
 ## Configuration
@@ -136,6 +138,14 @@ backup: 2026-05-16T17:00:00.000Z
 
 It does not push, does not stage unrelated files, and is intentionally separate from `firevault backup`.
 
+For the common local workflow, run backup and commit together:
+
+```bash
+npm run snapshot
+```
+
+`firevault snapshot` runs `firevault backup` first, then `firevault commit` only if backup succeeds.
+
 ## Backup Model
 
 Firevault writes one document per file:
@@ -152,6 +162,8 @@ JSON output is stable:
 
 ## Git Commit Flow
 
+`firevault backup` exports configured Firestore collections to deterministic local JSON files. It does not stage or commit anything.
+
 `firevault commit` expects to run inside a Git repository.
 
 Behavior:
@@ -163,6 +175,14 @@ Behavior:
 - never pushes.
 
 Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this workflow or by manual Git usage.
+
+`firevault snapshot` is the safe local backup workflow:
+
+- runs backup,
+- stops immediately if backup fails,
+- commits backup changes when files changed,
+- exits successfully when backup succeeds but no Git changes exist,
+- never pushes.
 
 ## Product Principles
 

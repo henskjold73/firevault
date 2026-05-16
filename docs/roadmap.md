@@ -15,17 +15,15 @@ Status:
 - Stable JSON serializer exists.
 - Backup command exports configured collections.
 - Documents are written one file per document.
+- Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
 
 Next work:
 
-- Align `init` config template with required `serviceAccountPath`.
-- Verify backup against a real Firebase project.
 - Add deterministic serializer tests.
 - Add export tests around file layout and stable ordering.
 - Decide how to represent Firestore special value types.
 - Decide how to handle subcollections.
-- Ensure service account files are ignored by Git.
-- Add basic error handling for missing config, missing credentials, and empty collections.
+- Add broader error handling around Firestore export failures.
 
 ## MVP
 
@@ -35,7 +33,7 @@ Expected capabilities:
 
 - `firevault backup` reliably exports configured collections.
 - Clear output summary after backup.
-- Initial Git commit integration for the configured backup directory.
+- Local Git snapshot command for backup plus scoped commit.
 - Git status integration showing changed, added, and deleted backup files.
 - Diff helpers for document paths.
 - Document path addressing such as `users/abc123`.
@@ -46,6 +44,8 @@ Example commands:
 
 ```bash
 firevault backup
+firevault commit
+firevault snapshot
 firevault diff users/abc123
 firevault changes
 ```
