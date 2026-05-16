@@ -24,6 +24,7 @@ Status:
 - Firestore emulator integration tests cover backup and document restore safety paths.
 - CLI packaging runs from compiled `dist/index.js`.
 - npm prerelease packaging is guarded by package file whitelisting and pack verification.
+- Public GitHub release docs cover quick start, security, contributing, and issue triage.
 
 Next work:
 
@@ -32,6 +33,7 @@ Next work:
 - Add broader error handling around Firestore export failures.
 - Add non-emulator unit tests for pure path and Git parsing helpers.
 - Review first npm prerelease feedback before widening restore scope.
+- Dogfood against real non-critical Firestore projects before expanding restore behavior.
 
 ## MVP
 

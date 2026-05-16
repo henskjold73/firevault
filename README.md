@@ -33,76 +33,119 @@ firestore-backups/
 
 The immediate priority is trustworthy document-level recovery: clear previews, explicit confirmation, and no broad destructive restore flows.
 
-## Install
+## Quick Start
 
 ```bash
-npm install
+npm install -g firevault
 ```
 
-Build the CLI before linking or publishing:
+Create a Firebase service account key for your Firestore project, save it as `serviceAccountKey.json`, and keep it out of Git.
+
+Create `firevault.config.json`:
+
+```json
+{
+  "projectId": "your-project-id",
+  "serviceAccountPath": "./serviceAccountKey.json",
+  "outputDir": "firestore-backups",
+  "collections": ["users"]
+}
+```
+
+Take a snapshot:
 
 ```bash
-npm run build
+firevault snapshot
 ```
 
-For local CLI testing:
+Example output:
+
+```txt
+Exported 2 docs from users
+Backup complete.
+Created commit: backup: 2026-05-16T17:00:00.000Z
+```
+
+Inspect what changed:
 
 ```bash
-npm link
-firevault --help
+firevault changes
 ```
 
-The installed `firevault` binary runs from `dist/index.js`.
+Example output:
 
-## Commands
+```txt
+Added:
 
-Run through the local TypeScript entrypoint during development:
+* firestore-backups/users/abc123.json
+
+Modified:
+
+Deleted:
+```
+
+Preview a document rollback:
 
 ```bash
-npm run dev -- --help
-npm run dev -- backup
-npm run dev -- changes
-npm run init
-npm run backup
-npm run commit
-npm run snapshot
-npm run changes
-npm run history -- users/abc123
-npm run restore-preview -- users/abc123 --from HEAD~3
-npm run restore-local -- users/abc123 --from HEAD~3 --confirm
-npm run restore-firestore -- users/abc123 --from HEAD~3 --confirm
+firevault restore-preview users/abc123 --from HEAD~1
 ```
 
-Equivalent direct commands:
+Example output:
+
+```txt
+Target: firestore-backups/users/abc123.json
+Source commit: HEAD~1
+Current file exists: yes
+
+Diff:
+
+  {
+-   "name": "Ada Lovelace"
++   "name": "Ada"
+  }
+```
+
+Restore one document to Firestore after reviewing the preview:
 
 ```bash
-npx tsx src/index.ts init
-npx tsx src/index.ts backup
-npx tsx src/index.ts commit
-npx tsx src/index.ts snapshot
-npx tsx src/index.ts changes
-npx tsx src/index.ts history users/abc123
-npx tsx src/index.ts restore-preview users/abc123 --from HEAD~3
-npx tsx src/index.ts restore-local users/abc123 --from HEAD~3 --confirm
-npx tsx src/index.ts restore-firestore users/abc123 --from HEAD~3 --confirm
+firevault restore-firestore users/abc123 --from HEAD~1 --confirm
 ```
 
-## Publishing
+`restore-firestore` overwrites one Firestore document with the JSON from Git. It does not support collection restore, merge, or patch restore yet.
 
-Before publishing:
+## Recovery Workflow
 
-- run `npm run build`,
-- run `npm run test:emulator`,
-- run `npm pack --dry-run` and review the file list,
-- verify `dist/index.js` exists and starts with `#!/usr/bin/env node`,
-- do not publish `serviceAccountKey.json`,
-- do not publish local `firestore-backups/` output,
-- verify logs such as `firestore-debug.log` are not included,
-- keep `dist` available for CLI execution unless a prepublish build step is added.
+Scenario: a script accidentally overwrites `users/abc123`.
 
-The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output.
+1. Inspect recent snapshot changes:
 
-`prepublishOnly` currently runs clean, build, and emulator tests. The package uses a `files` whitelist so published prerelease contents are limited to compiled CLI output, README, docs, changelog, license, and package metadata.
+```bash
+firevault changes --last 24h
+```
+
+2. Find the document history:
+
+```bash
+firevault history users/abc123
+```
+
+3. Preview the rollback:
+
+```bash
+firevault restore-preview users/abc123 --from HEAD~3
+```
+
+4. Restore only that document:
+
+```bash
+firevault restore-firestore users/abc123 --from HEAD~3 --confirm
+```
+
+5. Take a new snapshot after recovery:
+
+```bash
+firevault snapshot
+```
 
 ## Configuration
 
@@ -133,106 +176,41 @@ serviceAccountKey.json
 firestore-backups/
 ```
 
-## Local Development Flow
-
-1. Create a Firebase service account key in the Firebase Console or Google Cloud Console for the existing Firebase project.
-2. Save the downloaded key locally as `serviceAccountKey.json` in the project root.
-3. Create the Firevault config:
+## Commands
 
 ```bash
-npm run init
+firevault init
+firevault backup
+firevault commit
+firevault snapshot
+firevault changes
+firevault changes --last 24h
+firevault history users/abc123
+firevault restore-preview users/abc123 --from HEAD~3
+firevault restore-local users/abc123 --from HEAD~3 --confirm
+firevault restore-firestore users/abc123 --from HEAD~3 --confirm
 ```
 
-4. Edit `firevault.config.json`:
+## Local Development
 
-```json
-{
-  "projectId": "your-project-id",
-  "serviceAccountPath": "./serviceAccountKey.json",
-  "outputDir": "firestore-backups",
-  "collections": ["users"]
-}
-```
-
-5. Run a backup:
+Install dependencies and run commands through the TypeScript entrypoint:
 
 ```bash
-npm run backup
+npm install
+npm run dev -- --help
+npm run dev -- backup
+npm run dev -- changes
 ```
 
-Expected output structure:
-
-```txt
-firestore-backups/
-  users/
-    abc123.json
-    def456.json
-```
-
-Each exported document is written as one deterministic JSON file with recursively sorted object keys.
-
-6. Commit backup changes:
+Build and link the compiled CLI:
 
 ```bash
-npm run commit
+npm run build
+npm link
+firevault --help
 ```
 
-`firevault commit` only stages the configured `outputDir` and creates a local Git commit with a timestamped message such as:
-
-```txt
-backup: 2026-05-16T17:00:00.000Z
-```
-
-It does not push, does not stage unrelated files, and is intentionally separate from `firevault backup`.
-
-For the common local workflow, run backup and commit together:
-
-```bash
-npm run snapshot
-```
-
-`firevault snapshot` runs `firevault backup` first, then `firevault commit` only if backup succeeds.
-
-Inspect current backup file changes:
-
-```bash
-npm run changes
-```
-
-Inspect committed backup file changes from recent history:
-
-```bash
-npx tsx src/index.ts changes --last 24h
-```
-
-Show history for a backed-up document or collection:
-
-```bash
-npm run history -- users/abc123
-npm run history -- firestore-backups/users/abc123.json
-npm run history -- users
-```
-
-Preview restoring a backed-up document from Git:
-
-```bash
-npm run restore-preview -- users/abc123 --from HEAD~3
-npm run restore-preview -- firestore-backups/users/abc123.json --from a1b2c3d
-```
-
-Restore a backed-up document into the local backup directory only:
-
-```bash
-npm run restore-local -- users/abc123 --from HEAD~3 --confirm
-npm run restore-local -- firestore-backups/users/abc123.json --from a1b2c3d --confirm
-```
-
-Restore a backed-up document directly into Firestore:
-
-```bash
-npm run restore-firestore -- users/abc123 --from HEAD~3 --confirm
-npm run restore-firestore -- firestore-backups/users/abc123.json --from a1b2c3d --confirm
-```
+The installed `firevault` binary runs from `dist/index.js`.
 
 ## Backup Model
 
@@ -338,6 +316,20 @@ Covered emulator flows:
 - `restore-firestore` rejects collection paths,
 - `restore-firestore` requires `--confirm`.
 
+## Publishing
+
+Before publishing:
+
+- run `npm run build`,
+- run `npm run test:emulator`,
+- run `npm pack --dry-run` and review the file list,
+- verify `dist/index.js` exists and starts with `#!/usr/bin/env node`,
+- do not publish `serviceAccountKey.json`,
+- do not publish local `firestore-backups/` output,
+- verify logs such as `firestore-debug.log` are not included.
+
+The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output. `prepublishOnly` currently runs clean, build, and emulator tests.
+
 ## Product Principles
 
 Firevault should stay:
@@ -363,6 +355,9 @@ Firestore restore is document-only and overwrite-only for now. Future restore fl
 
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
+- [GitHub labels](docs/github-labels.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
 - [AI review ledger](AI_REVIEW.md)
 
 AI agents must never create git commits automatically. Human review and commits are required.
