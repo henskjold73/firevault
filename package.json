@@ -4,11 +4,12 @@
   "description": "Git-native backup, diff, and recovery tooling for Firestore.",
   "type": "module",
   "bin": {
-    "firevault": "./src/index.ts"
+    "firevault": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
+    "clean": "rm -rf dist",
+    "build": "tsc && chmod +x dist/index.js",
     "test:emulator": "tsx test/integration/run-firestore-emulator.ts",
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",

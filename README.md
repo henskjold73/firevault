@@ -37,11 +37,29 @@ The immediate priority is making Firestore exports deterministic, readable in Gi
 npm install
 ```
 
+Build the CLI before linking or publishing:
+
+```bash
+npm run build
+```
+
+For local CLI testing:
+
+```bash
+npm link
+firevault --help
+```
+
+The installed `firevault` binary runs from `dist/index.js`.
+
 ## Commands
 
 Run through the local TypeScript entrypoint during development:
 
 ```bash
+npm run dev -- --help
+npm run dev -- backup
+npm run dev -- changes
 npm run init
 npm run backup
 npm run commit
@@ -66,6 +84,18 @@ npx tsx src/index.ts restore-preview users/abc123 --from HEAD~3
 npx tsx src/index.ts restore-local users/abc123 --from HEAD~3 --confirm
 npx tsx src/index.ts restore-firestore users/abc123 --from HEAD~3 --confirm
 ```
+
+## Publishing
+
+Before publishing:
+
+- run `npm run build`,
+- verify `dist/index.js` exists and starts with `#!/usr/bin/env node`,
+- do not publish `serviceAccountKey.json`,
+- do not publish local `firestore-backups/` output,
+- keep `dist` available for CLI execution unless a prepublish build step is added.
+
+The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output.
 
 ## Configuration
 
