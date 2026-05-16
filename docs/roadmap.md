@@ -23,6 +23,7 @@ Status:
 - Single-document Firestore overwrite restore exists through `restore-firestore <path> --from <commit> --confirm`.
 - Firestore emulator integration tests cover backup and document restore safety paths.
 - CLI packaging runs from compiled `dist/index.js`.
+- npm prerelease packaging is guarded by package file whitelisting and pack verification.
 
 Next work:
 
@@ -30,7 +31,7 @@ Next work:
 - Decide how to handle subcollections.
 - Add broader error handling around Firestore export failures.
 - Add non-emulator unit tests for pure path and Git parsing helpers.
-- Add publication automation only after package contents are finalized.
+- Review first npm prerelease feedback before widening restore scope.
 
 ## MVP
 

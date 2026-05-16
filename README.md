@@ -10,6 +10,8 @@ Firevault is CLI-first backup, audit, diff, rollback, and recovery tooling for e
 
 Firevault is in Foundation / Phase 0.
 
+This is an experimental prerelease CLI. Use it against test or non-critical Firebase projects until backup and restore behavior has been reviewed for your project.
+
 Implemented:
 
 - TypeScript CLI setup with Commander
@@ -90,12 +92,17 @@ npx tsx src/index.ts restore-firestore users/abc123 --from HEAD~3 --confirm
 Before publishing:
 
 - run `npm run build`,
+- run `npm run test:emulator`,
+- run `npm pack --dry-run` and review the file list,
 - verify `dist/index.js` exists and starts with `#!/usr/bin/env node`,
 - do not publish `serviceAccountKey.json`,
 - do not publish local `firestore-backups/` output,
+- verify logs such as `firestore-debug.log` are not included,
 - keep `dist` available for CLI execution unless a prepublish build step is added.
 
 The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output.
+
+`prepublishOnly` currently runs clean, build, and emulator tests. The package uses a `files` whitelist so published prerelease contents are limited to compiled CLI output, README, docs, changelog, license, and package metadata.
 
 ## Configuration
 

@@ -1,0 +1,14 @@
+# Defense in depth. package.json `files` is the primary publish whitelist.
+serviceAccountKey.json
+firestore-backups/
+firestore-debug.log
+*.log
+.env
+.env.*
+node_modules/
+src/
+test/
+firebase.json
+firestore.rules
+tsconfig.json
+.vscode/

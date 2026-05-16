@@ -2,7 +2,29 @@
   "name": "firevault",
   "version": "0.1.0",
   "description": "Git-native backup, diff, and recovery tooling for Firestore.",
+  "keywords": [
+    "firebase",
+    "firestore",
+    "backup",
+    "restore",
+    "git",
+    "cli",
+    "disaster-recovery"
+  ],
+  "author": "henskjold73",
+  "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henskjold73/firevault.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "bin": {
     "firevault": "./dist/index.js"
   },
@@ -10,6 +32,7 @@
     "dev": "tsx src/index.ts",
     "clean": "rm -rf dist",
     "build": "tsc && chmod +x dist/index.js",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:emulator",
     "test:emulator": "tsx test/integration/run-firestore-emulator.ts",
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",
