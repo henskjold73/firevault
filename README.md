@@ -52,6 +52,8 @@ firevault init
 
 `firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It creates `.firevault/`, writes `.firevault/config.json`, writes `.firevault/.gitignore`, can initialize Git inside `.firevault/`, and adds `.firevault/` to the parent app repo `.gitignore` when the parent is a Git repo.
 
+If VS Code settings are detected, init can also hide `.firevault` from the parent workspace Source Control panel by adding `.firevault` to `git.ignoredRepositories`. This only affects the parent VS Code UI; `.firevault` remains a normal Git repository and works normally when opened directly.
+
 During setup, Firevault looks for likely Firebase project IDs in local files such as `.env.local`, `.env.development`, `firebase.json`, and common Firebase config files. Detection is best-effort and transparent: if Firevault finds candidates, it shows where they came from and lets you accept one or enter a value manually.
 
 Firevault also looks for likely local service account files such as `serviceAccountKey.json`, `service-account.json`, `firebase-service-account.json`, and `credentials/firebase.json`. It never prints private key contents. If you select a service account path, Firevault adds that path to `.gitignore`.

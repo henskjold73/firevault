@@ -1,12 +1,23 @@
 # Changelog
 
-## 0.2.0-beta.1 - Unreleased
+## Unreleased
+
+- Added optional VS Code settings support during `firevault init` to hide the nested `.firevault` Git repository from the parent workspace Source Control panel.
+
+## 0.2.0-beta.3
+
+- Changed `firevault doctor` to treat service account paths outside `.firevault` as informational rather than a failure.
+
+## 0.2.0-beta.2
+
+- Fixed CLI version reporting to read from `package.json` instead of a hardcoded version.
+
+## 0.2.0-beta.1
 
 - Added `firevault status` for compact local recovery health checks.
 - Added `firevault doctor` for actionable local setup validation.
 - Added `firevault setup-github-action` to generate a scheduled GitHub Actions workflow for offsite snapshots.
 - Added local workflow detection for generated GitHub Actions snapshot automation.
-- Changed `firevault doctor` to treat service account paths outside `.firevault` as informational rather than a failure.
 
 ## 0.2.0-beta.0
 

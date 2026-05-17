@@ -407,6 +407,78 @@ function ensureGitignoreEntries(gitignorePath: string, entries: string[]): void 
   );
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasVsCodeConfig(appRoot: string): boolean {
+  return existsSync(path.join(appRoot, ".vscode"));
+}
+
+async function shouldHideWorkspaceFromVsCode(
+  options: InitOptions,
+  appRoot: string,
+  rl?: PromptInterface,
+): Promise<boolean> {
+  if (!hasVsCodeConfig(appRoot)) {
+    return false;
+  }
+
+  if (options.yes) {
+    return true;
+  }
+
+  if (!rl) {
+    throw new Error("Prompt interface is required for interactive init.");
+  }
+
+  console.log("VS Code detected.");
+  const answer = (
+    await rl.question("Hide .firevault repository from the parent VS Code workspace? (Y/n): ")
+  )
+    .trim()
+    .toLowerCase();
+
+  return answer === "" || answer === "y" || answer === "yes";
+}
+
+function updateVsCodeSettings(appRoot: string): boolean {
+  const vscodeDir = path.join(appRoot, ".vscode");
+  const settingsPath = path.join(vscodeDir, "settings.json");
+  const settings: Record<string, unknown> = existsSync(settingsPath)
+    ? JSON.parse(readFileSync(settingsPath, "utf-8")) as unknown as Record<string, unknown>
+    : {};
+
+  if (!isRecord(settings)) {
+    throw new Error(".vscode/settings.json must contain a JSON object.");
+  }
+
+  const existingIgnoredRepositories = settings["git.ignoredRepositories"];
+
+  if (
+    existingIgnoredRepositories !== undefined &&
+    !Array.isArray(existingIgnoredRepositories)
+  ) {
+    throw new Error(
+      ".vscode/settings.json field git.ignoredRepositories must be an array.",
+    );
+  }
+
+  const ignoredRepositories = existingIgnoredRepositories
+    ? [...existingIgnoredRepositories]
+    : [];
+
+  if (ignoredRepositories.includes(".firevault")) {
+    return false;
+  }
+
+  mkdirSync(vscodeDir, { recursive: true });
+  settings["git.ignoredRepositories"] = [...ignoredRepositories, ".firevault"];
+  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+
+  return true;
+}
+
 export async function runInit(options: InitOptions): Promise<void> {
   console.log("Firevault");
   console.log("Undo button for Firestore.");
@@ -435,6 +507,11 @@ export async function runInit(options: InitOptions): Promise<void> {
     const shouldInitGit = workspaceIsGitRepository
       ? false
       : await promptForGitInit(options, rl);
+    const shouldHideVsCodeWorkspace = await shouldHideWorkspaceFromVsCode(
+      options,
+      appRoot,
+      rl,
+    );
     const config = await promptForConfig(options, workspaceRoot, rl);
 
     config.collections = config.collections.map((collection) => collection.trim());
@@ -494,6 +571,16 @@ export async function runInit(options: InitOptions): Promise<void> {
 
       ensureGitignoreEntries(path.join(appRoot, ".gitignore"), parentIgnoreEntries);
       console.log("Updated parent .gitignore safety entries.");
+    }
+
+    if (shouldHideVsCodeWorkspace) {
+      const updatedVsCodeSettings = updateVsCodeSettings(appRoot);
+
+      if (updatedVsCodeSettings) {
+        console.log("Updated VS Code settings to hide .firevault from the parent workspace.");
+      } else {
+        console.log("VS Code settings already hide .firevault from the parent workspace.");
+      }
     }
 
     console.log("Created .firevault/config.json.");

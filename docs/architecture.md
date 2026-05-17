@@ -107,6 +107,7 @@ Behavior:
 - refuses to overwrite `.firevault/config.json` unless `--force` is provided,
 - adds `.firevault/` to the parent app repo `.gitignore` when the parent is a Git repo,
 - appends `.firevault/.gitignore` safety entries, including the selected service account path, without duplicating existing lines,
+- optionally adds `.firevault` to VS Code `git.ignoredRepositories` for the parent workspace when `.vscode/` is detected and the user accepts,
 - never creates service accounts, opens browsers, runs `gcloud`, commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
 
 ## Firebase Access
@@ -133,6 +134,8 @@ The app repo and Firevault recovery repo are separate:
 Operational commands work from the app root or from inside `.firevault/` by discovering the nearest `.firevault/config.json`. Git commands run with `.firevault/` as their working directory so `firevault commit`, `changes`, `history`, and restore previews cannot stage or inspect unrelated app source files.
 
 `firestore-backups/` is not ignored inside `.firevault/` by default. The `.firevault` repository exists to commit backup data.
+
+VS Code may show nested Git repositories in the parent app Source Control panel. Firevault can optionally update `.vscode/settings.json` in the parent app to hide `.firevault` from that parent workspace UI using `git.ignoredRepositories`. This does not change Git behavior and does not prevent opening `.firevault` directly in VS Code.
 
 ## GitHub Actions Automation
 
