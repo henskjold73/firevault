@@ -94,7 +94,39 @@ export function getCurrentBranch(cwd = process.cwd()): string | undefined {
 }
 
 export function getRemoteUrl(name: string, cwd = process.cwd()): string | undefined {
-  return tryRunGit(["remote", "get-url", name], cwd)?.trim() || undefined;
+  return tryRunGit(["config", "--get", `remote.${name}.url`], cwd)?.trim() || undefined;
+}
+
+export function isPathIgnored(path: string, cwd = process.cwd()): boolean | undefined {
+  const output = tryRunGit(["check-ignore", "--quiet", "--", path], cwd);
+
+  if (output !== undefined) {
+    return true;
+  }
+
+  try {
+    runGit(["check-ignore", "--quiet", "--", path], cwd);
+    return true;
+  } catch (error) {
+    if (error instanceof GitError) {
+      return false;
+    }
+
+    return undefined;
+  }
+}
+
+export function getTrackedFiles(cwd = process.cwd()): string[] | undefined {
+  const output = tryRunGit(["ls-files"], cwd);
+
+  if (output === undefined) {
+    return undefined;
+  }
+
+  return output
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
 }
 
 export function getLatestCommitDate(path: string, cwd = process.cwd()): string | undefined {

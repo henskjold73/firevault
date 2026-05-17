@@ -40,6 +40,7 @@
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",
     "status": "tsx src/index.ts status",
+    "doctor": "tsx src/index.ts doctor",
     "setup:github-action": "tsx src/index.ts setup-github-action",
     "changes": "tsx src/index.ts changes",
     "history": "tsx src/index.ts history",

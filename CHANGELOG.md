@@ -11,6 +11,7 @@ Breaking prerelease change:
 - `firestore-backups/` is no longer ignored inside `.firevault/` by default.
 - Added `firevault setup-github-action` to generate a local scheduled GitHub Actions workflow for offsite snapshots.
 - Updated `firevault status` to detect the generated workspace workflow and scheduled trigger locally.
+- Added `firevault doctor` for local setup validation and actionable recovery workspace fixes.
 
 ## 0.1.1-beta.1
 

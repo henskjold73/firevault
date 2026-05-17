@@ -18,6 +18,7 @@ Status:
 - Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
 - File-level change inspection exists through `changes` and `changes --last <window>`.
 - Local recovery health inspection exists through `status`.
+- Local setup validation exists through `doctor`.
 - Document and collection history inspection exists through `history <path>`.
 - Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
 - Local backup-file recovery exists through `restore-local <path> --from <commit> --confirm`.
@@ -41,7 +42,7 @@ Next work:
 - Dogfood against real non-critical Firestore projects before expanding restore behavior.
 - Expand `status` automation awareness without adding network dependencies.
 - Validate and harden generated GitHub Actions workflow behavior through dogfooding.
-- Add local `doctor` validation for workspace safety, workflow correctness, Git remotes, and actionable fixes.
+- Dogfood `doctor` checks against real recovery workspaces and refine fix guidance.
 
 ## MVP
 

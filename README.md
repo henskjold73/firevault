@@ -234,6 +234,7 @@ firevault backup
 firevault commit
 firevault snapshot
 firevault status
+firevault doctor
 firevault setup-github-action
 firevault changes
 firevault changes --last 24h
@@ -336,6 +337,16 @@ Git:
 Automation:
   GitHub Actions workflow: not configured
 ```
+
+`firevault doctor` validates the local Firevault setup and prints actionable fixes. It checks workspace discovery, config validity, service account file presence, backup output state, `.firevault` Git setup, remote origin, GitHub Actions workflow contents, `.gitignore` safety, tracked secret-looking files, backup directory trackability, and working tree state.
+
+Doctor is local-only. It does not contact Firebase, call GitHub APIs, write files, stage, commit, push, or print secrets.
+
+Exit codes:
+
+- `0`: all checks OK,
+- `1`: warnings only,
+- `2`: one or more failures.
 
 `firevault setup-github-action` creates a local scheduled workflow at `.firevault/.github/workflows/firevault-snapshot.yml`.
 

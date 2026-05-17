@@ -48,11 +48,11 @@ Use clear severity:
 - `WARN`: setup can work locally but recovery posture is weaker.
 - `FAIL`: setup is incomplete or unsafe enough that normal recovery workflows may fail.
 
-Exit code proposal:
+Exit codes:
 
 - `0` if all checks are `OK`.
-- `1` if any `FAIL`.
-- `0` or `2` if warnings only is an open question. For early CLI simplicity, warnings-only can exit `0` while the output remains explicit.
+- `1` if warnings are present and no checks fail.
+- `2` if any `FAIL`.
 
 ## Checks
 
