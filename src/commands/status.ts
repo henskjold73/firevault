@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { Command } from "commander";
 import { ConfigError, findWorkspaceRoot, loadConfig } from "../config/loadConfig.js";
@@ -22,10 +22,29 @@ function relativeDisplayPath(targetPath: string): string {
   return relativePath.startsWith("..") ? targetPath : relativePath || ".";
 }
 
-function workflowExists(appRoot: string): boolean {
-  return existsSync(
-    path.join(appRoot, ".github", "workflows", "firevault-snapshot.yml"),
+function workflowStatus(workspaceRoot: string): string {
+  const workflowPath = path.join(
+    workspaceRoot,
+    ".github",
+    "workflows",
+    "firevault-snapshot.yml",
   );
+
+  if (!existsSync(workflowPath)) {
+    return "not configured";
+  }
+
+  try {
+    const workflow = readFileSync(workflowPath, "utf-8");
+
+    if (workflow.includes("schedule:") && workflow.includes("cron:")) {
+      return "configured";
+    }
+
+    return "present, schedule missing";
+  } catch {
+    return "present, unreadable";
+  }
 }
 
 function printMissingWorkspace(): void {
@@ -76,7 +95,6 @@ export function runStatus(): void {
     throw error;
   }
 
-  const appRoot = path.dirname(config.workspaceRoot);
   const gitRepositoryExists = isInsideGitRepository(config.workspaceRoot);
   const outputDirExists = existsSync(config.outputDirPath);
   const workingTreeDirty = gitRepositoryExists
@@ -134,7 +152,7 @@ export function runStatus(): void {
   console.log("");
   console.log("Automation:");
   console.log(
-    `  GitHub Actions workflow: ${workflowExists(appRoot) ? "configured" : "not configured"}`,
+    `  GitHub Actions workflow: ${workflowStatus(config.workspaceRoot)}`,
   );
 }
 

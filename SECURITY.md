@@ -24,6 +24,7 @@ Expectations:
 - prefer least-privilege credentials where possible,
 - rotate credentials if they are exposed,
 - do not publish `serviceAccountKey.json` to npm or GitHub.
+- when using GitHub Actions, store the full service account JSON only in the repository secret `FIREVAULT_SERVICE_ACCOUNT_JSON`.
 
 Recommended `.gitignore` entries:
 
@@ -53,6 +54,12 @@ Recommended practices:
 - review what collections are configured for export,
 - avoid pushing backup data until repository access controls are clear,
 - treat backup JSON with the same sensitivity as production database contents.
+
+## GitHub Actions
+
+`firevault setup-github-action` generates a local workflow file only. Firevault does not create GitHub repositories, call GitHub APIs, create secrets, broker credentials, or store service account JSON.
+
+The generated workflow writes `FIREVAULT_SERVICE_ACCOUNT_JSON` to the configured service account path for the job, runs `firevault snapshot`, and removes the credential file at the end of the job. Do not paste service account JSON into workflow YAML or commit credential files.
 
 ## Reporting Security Issues
 

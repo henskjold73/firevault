@@ -9,6 +9,8 @@ Breaking prerelease change:
 - Config-relative paths now resolve from `.firevault/`.
 - `firevault init` no longer creates root `firevault.config.json`.
 - `firestore-backups/` is no longer ignored inside `.firevault/` by default.
+- Added `firevault setup-github-action` to generate a local scheduled GitHub Actions workflow for offsite snapshots.
+- Updated `firevault status` to detect the generated workspace workflow and scheduled trigger locally.
 
 ## 0.1.1-beta.1
 

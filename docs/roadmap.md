@@ -29,6 +29,7 @@ Status:
 - Public GitHub release docs cover quick start, security, contributing, and issue triage.
 - Firevault 0.2 uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace as a breaking prerelease change.
 - Guided `firevault init` validates setup input, checks Git state, suggests local Firebase project settings, optionally lists Firestore collections, creates `.firevault/`, and applies workspace `.gitignore` safety entries.
+- Local GitHub Actions workflow generation exists through `setup-github-action`.
 
 Next work:
 
@@ -39,7 +40,7 @@ Next work:
 - Review first npm prerelease feedback before widening restore scope.
 - Dogfood against real non-critical Firestore projects before expanding restore behavior.
 - Expand `status` automation awareness without adding network dependencies.
-- Add local GitHub Actions workflow generation for scheduled offsite snapshots without GitHub API calls.
+- Validate and harden generated GitHub Actions workflow behavior through dogfooding.
 
 ## MVP
 

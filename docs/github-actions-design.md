@@ -71,7 +71,7 @@ Later, setup can support:
 - `--tag next` as the default prerelease tag,
 - `--tag latest` once Firevault has a stable release.
 
-The generated workflow should include a visible comment explaining the version choice.
+The generated workflow currently installs `firevault@next`.
 
 ## Secret Name
 
@@ -86,7 +86,7 @@ This name is specific enough to avoid collision with application secrets and cle
 The workflow should write it to the configured service account path:
 
 ```bash
-printf '%s' "$FIREVAULT_SERVICE_ACCOUNT_JSON" > serviceAccountKey.json
+printf '%s' "$FIREVAULT_SERVICE_ACCOUNT_JSON" > .firevault/serviceAccountKey.json
 ```
 
 In GitHub Actions syntax, prefer reading from `secrets.FIREVAULT_SERVICE_ACCOUNT_JSON` into an environment variable for one step only.
@@ -252,6 +252,9 @@ jobs:
     steps:
       - name: Check out recovery repository
         uses: actions/checkout@v4
+        with:
+          path: .firevault
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -265,9 +268,11 @@ jobs:
         env:
           FIREVAULT_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREVAULT_SERVICE_ACCOUNT_JSON }}
         run: |
-          printf '%s' "$FIREVAULT_SERVICE_ACCOUNT_JSON" > serviceAccountKey.json
+          mkdir -p "$(dirname ".firevault/serviceAccountKey.json")"
+          printf '%s' "$FIREVAULT_SERVICE_ACCOUNT_JSON" > ".firevault/serviceAccountKey.json"
 
       - name: Configure Git author
+        working-directory: .firevault
         run: |
           git config user.name "firevault"
           git config user.email "firevault@users.noreply.github.com"
@@ -276,20 +281,27 @@ jobs:
         run: firevault snapshot
 
       - name: Push backup commit
+        working-directory: .firevault
         run: |
-          if git diff --quiet origin/main..HEAD; then
-            echo "No new backup commit to push."
-            exit 0
+          branch="$(git rev-parse --abbrev-ref HEAD)"
+
+          if git rev-parse --verify "origin/$branch" >/dev/null 2>&1; then
+            commits_to_push="$(git rev-list --count "origin/$branch..HEAD")"
+
+            if [ "$commits_to_push" = "0" ]; then
+              echo "No new backup commit to push."
+              exit 0
+            fi
           fi
 
-          git push
+          git push origin "HEAD:$branch"
 
       - name: Remove service account file
         if: always()
-        run: rm -f serviceAccountKey.json
+        run: rm -f ".firevault/serviceAccountKey.json"
 ```
 
-Open question: branch names vary. The implementation should avoid hardcoding `main` if possible. It can use the checked-out branch or `git rev-parse --abbrev-ref HEAD`.
+The implementation avoids hardcoding `main` by using `git rev-parse --abbrev-ref HEAD` in the checked-out recovery repository.
 
 ## First Implementation Files
 

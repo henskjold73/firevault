@@ -234,6 +234,7 @@ firevault backup
 firevault commit
 firevault snapshot
 firevault status
+firevault setup-github-action
 firevault changes
 firevault changes --last 24h
 firevault history users/abc123
@@ -335,6 +336,14 @@ Git:
 Automation:
   GitHub Actions workflow: not configured
 ```
+
+`firevault setup-github-action` creates a local scheduled workflow at `.firevault/.github/workflows/firevault-snapshot.yml`.
+
+The workflow is intended for a private GitHub repository containing the `.firevault` recovery workspace. It runs daily by default, supports manual dispatch, installs `firevault@next`, writes the Firebase service account JSON from the GitHub secret `FIREVAULT_SERVICE_ACCOUNT_JSON`, runs `firevault snapshot`, and pushes only when a backup commit was created.
+
+This command only writes the workflow file. It does not create GitHub repositories, call GitHub APIs, create secrets, push, stage, commit, store credentials, or install GitHub CLI dependencies.
+
+After generation, push the `.firevault` repo to GitHub, create the `FIREVAULT_SERVICE_ACCOUNT_JSON` repository secret with the full service account JSON, review the workflow, and commit it yourself.
 
 `firevault changes` shows a file-level Git summary for the configured `outputDir` only:
 

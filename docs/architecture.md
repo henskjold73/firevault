@@ -134,6 +134,14 @@ Operational commands work from the app root or from inside `.firevault/` by disc
 
 `firestore-backups/` is not ignored inside `.firevault/` by default. The `.firevault` repository exists to commit backup data.
 
+## GitHub Actions Automation
+
+`firevault setup-github-action` is a local workflow-file generator for scheduled offsite snapshots. It writes `.firevault/.github/workflows/firevault-snapshot.yml` and stops there.
+
+The command does not create GitHub repositories, call GitHub APIs, create secrets, push, stage, commit, store credentials, or depend on the GitHub CLI. Users push the `.firevault` repository and create the `FIREVAULT_SERVICE_ACCOUNT_JSON` secret themselves.
+
+The generated workflow checks out the recovery repository into a `.firevault` directory, installs `firevault@next`, writes the service account JSON from the GitHub secret to `.firevault/serviceAccountKey.json`, runs `firevault snapshot` from the parent workspace, and pushes only if a backup commit was created.
+
 ## Emulator Tests
 
 Firestore emulator integration tests live under `test/integration/`.
