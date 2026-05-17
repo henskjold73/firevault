@@ -13,13 +13,14 @@ import { setupGithubActionCommand } from "./commands/setupGithubAction.js";
 import { restorePreviewCommand } from "./commands/restorePreview.js";
 import { restoreLocalCommand } from "./commands/restoreLocal.js";
 import { restoreFirestoreCommand } from "./commands/restoreFirestore.js";
+import packageJson from "../package.json" with { type: "json" };
 
 const program = new Command();
 
 program
   .name("firevault")
   .description("Undo button for Firestore.")
-  .version("0.2.0-beta.0");
+  .version(packageJson.version);
 
 program.addCommand(initCommand);
 program.addCommand(backupCommand);
