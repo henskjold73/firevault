@@ -6,6 +6,7 @@
 - Added `firevault doctor` for actionable local setup validation.
 - Added `firevault setup-github-action` to generate a scheduled GitHub Actions workflow for offsite snapshots.
 - Added local workflow detection for generated GitHub Actions snapshot automation.
+- Changed `firevault doctor` to treat service account paths outside `.firevault` as informational rather than a failure.
 
 ## 0.2.0-beta.0
 

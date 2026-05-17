@@ -11,7 +11,7 @@ import {
   isPathIgnored,
 } from "../git/git.js";
 
-type DoctorSeverity = "OK" | "WARN" | "FAIL";
+type DoctorSeverity = "OK" | "INFO" | "WARN" | "FAIL";
 
 interface DoctorCheck {
   severity: DoctorSeverity;
@@ -224,9 +224,9 @@ export function runDoctor(): void {
   if (!isInside(config.workspaceRoot, config.serviceAccountPathAbsolute)) {
     addCheck(
       checks,
-      "FAIL",
+      "INFO",
       "Service account path is outside .firevault",
-      "Set serviceAccountPath to a path inside .firevault, such as ./serviceAccountKey.json",
+      "External credential paths are supported. Ensure the file is securely managed and excluded from Git.",
     );
   } else if (existsSync(config.serviceAccountPathAbsolute)) {
     addCheck(checks, "OK", "Service account file present");
@@ -283,11 +283,18 @@ export function runDoctor(): void {
 
   workflowChecks(checks, config.workspaceRoot);
 
-  const serviceAccountIgnored = workspaceIsGitRepo
+  const serviceAccountIsInsideWorkspace = isInside(
+    config.workspaceRoot,
+    config.serviceAccountPathAbsolute,
+  );
+
+  const serviceAccountIgnored = workspaceIsGitRepo && serviceAccountIsInsideWorkspace
     ? isPathIgnored(config.serviceAccountPath, config.workspaceRoot)
     : undefined;
 
-  if (serviceAccountIgnored === true || gitignoreContains(config.workspaceRoot, config.serviceAccountPath)) {
+  if (!serviceAccountIsInsideWorkspace) {
+    addCheck(checks, "INFO", "Service account ignore check skipped for external path");
+  } else if (serviceAccountIgnored === true || gitignoreContains(config.workspaceRoot, config.serviceAccountPath)) {
     addCheck(checks, "OK", "Service account file ignored");
   } else {
     addCheck(

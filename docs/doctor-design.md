@@ -45,6 +45,7 @@ Next fixes:
 Use clear severity:
 
 - `OK`: check passed.
+- `INFO`: supported setup choice or useful context.
 - `WARN`: setup can work locally but recovery posture is weaker.
 - `FAIL`: setup is incomplete or unsafe enough that normal recovery workflows may fail.
 
@@ -53,6 +54,8 @@ Exit codes:
 - `0` if all checks are `OK`.
 - `1` if warnings are present and no checks fail.
 - `2` if any `FAIL`.
+
+`INFO` checks do not affect the exit code.
 
 ## Checks
 
@@ -103,15 +106,24 @@ Edit .firevault/config.json or rerun `firevault init --force`
 
 Checks:
 
-- configured `serviceAccountPath` resolves inside `.firevault`,
-- file exists.
+- configured `serviceAccountPath` may resolve inside or outside `.firevault`,
+- file exists when the path is inside `.firevault`.
+
+External credential paths are supported. A service account file outside `.firevault` is not inherently unsafe because users may keep credentials in secure locations such as `~/.config`, password-manager mounted paths, or shared secret directories.
 
 Do not parse the service account JSON in the first version. Parsing is local, but it starts pulling doctor toward credential validation. Save that for a later `--verify` mode.
 
 Result:
 
+- `INFO Service account path is outside .firevault`
 - `OK Service account file present`
 - `FAIL Service account file missing`
+
+Message for external paths:
+
+```txt
+External credential paths are supported. Ensure the file is securely managed and excluded from Git.
+```
 
 Fix:
 
@@ -216,7 +228,9 @@ Review .firevault/.github/workflows/firevault-snapshot.yml or rerun `firevault s
 Checks:
 
 - `.firevault/.gitignore` exists,
-- configured service account path is ignored by Git.
+- configured service account path is ignored by Git when the path is inside `.firevault`.
+
+If the configured service account path is outside `.firevault`, skip `.firevault/.gitignore` enforcement and report an informational check instead. External credential paths should be managed by the external location's security and Git ignore policy.
 
 Best check:
 
