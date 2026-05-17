@@ -233,6 +233,7 @@ firevault init
 firevault backup
 firevault commit
 firevault snapshot
+firevault status
 firevault changes
 firevault changes --last 24h
 firevault history users/abc123
@@ -302,6 +303,38 @@ Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this
 - commits backup changes when files changed,
 - exits successfully when backup succeeds but no Git changes exist,
 - never pushes.
+
+`firevault status` shows a compact local recovery health overview. It does not contact Firebase, call GitHub APIs, fetch from remotes, write files, stage, commit, or push.
+
+Example output:
+
+```txt
+Firevault status
+
+Workspace:
+  Path: .firevault
+  Config: OK
+
+Firestore:
+  Project: my-project
+  Collections configured: 4
+
+Backups:
+  Output directory: firestore-backups
+  Output exists: yes
+  Last snapshot: 2026-05-17T14:22:10Z
+  Uncommitted backup changes: none
+
+Git:
+  Repository: OK
+  Branch: main
+  Working tree: clean
+  Remote origin: configured
+  Remote sync: unknown
+
+Automation:
+  GitHub Actions workflow: not configured
+```
 
 `firevault changes` shows a file-level Git summary for the configured `outputDir` only:
 

@@ -39,6 +39,7 @@
     "test:emulator": "tsx test/integration/run-firestore-emulator.ts",
     "backup": "tsx src/index.ts backup",
     "commit": "tsx src/index.ts commit",
+    "status": "tsx src/index.ts status",
     "changes": "tsx src/index.ts changes",
     "history": "tsx src/index.ts history",
     "restore-preview": "tsx src/index.ts restore-preview",

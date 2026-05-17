@@ -13,6 +13,11 @@ export interface HistoryEntry {
   changedFileCount?: number;
 }
 
+export interface AheadBehind {
+  ahead: number;
+  behind: number;
+}
+
 export class GitError extends Error {
   constructor(message: string) {
     super(message);
@@ -42,6 +47,14 @@ function runGit(args: string[], cwd = process.cwd()): string {
   }
 }
 
+function tryRunGit(args: string[], cwd = process.cwd()): string | undefined {
+  try {
+    return runGit(args, cwd);
+  } catch {
+    return undefined;
+  }
+}
+
 export function isInsideGitRepository(cwd = process.cwd()): boolean {
   try {
     return runGit(["rev-parse", "--is-inside-work-tree"], cwd).trim() === "true";
@@ -66,6 +79,50 @@ export function hasWorkingTreeChanges(cwd = process.cwd()): boolean {
 
 export function hasChangesUnder(path: string, cwd = process.cwd()): boolean {
   return runGit(["status", "--porcelain", "--ignored", "--", path], cwd).trim() !== "";
+}
+
+export function getCurrentBranch(cwd = process.cwd()): string | undefined {
+  const branch = tryRunGit(["branch", "--show-current"], cwd)?.trim();
+
+  if (branch) {
+    return branch;
+  }
+
+  const shortSha = tryRunGit(["rev-parse", "--short", "HEAD"], cwd)?.trim();
+
+  return shortSha ? `detached at ${shortSha}` : undefined;
+}
+
+export function getRemoteUrl(name: string, cwd = process.cwd()): string | undefined {
+  return tryRunGit(["remote", "get-url", name], cwd)?.trim() || undefined;
+}
+
+export function getLatestCommitDate(path: string, cwd = process.cwd()): string | undefined {
+  return tryRunGit(["log", "-1", "--format=%cI", "--", path], cwd)?.trim() || undefined;
+}
+
+export function getAheadBehind(cwd = process.cwd()): AheadBehind | undefined {
+  const upstream = tryRunGit(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], cwd)
+    ?.trim();
+
+  if (!upstream) {
+    return undefined;
+  }
+
+  const output = tryRunGit(["rev-list", "--left-right", "--count", "HEAD...@{u}"], cwd)
+    ?.trim();
+
+  if (!output) {
+    return undefined;
+  }
+
+  const [ahead, behind] = output.split(/\s+/).map((value) => Number(value));
+
+  if (!Number.isFinite(ahead) || !Number.isFinite(behind)) {
+    return undefined;
+  }
+
+  return { ahead, behind };
 }
 
 function emptyFileChanges(): FileChanges {

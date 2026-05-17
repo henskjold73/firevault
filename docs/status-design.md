@@ -40,12 +40,14 @@ Phase 1 must not:
 
 ## Smallest Phase 1 Implementation
 
-Add `firevault status` as a read-only command that:
+Phase 1 implements `firevault status` as a read-only command that:
 
 1. Discovers the workspace from the current directory.
 2. Reads and validates `.firevault/config.json`.
 3. Checks local backup and Git state under `.firevault`.
 4. Prints a short grouped summary.
+
+Implementation note: missing workspace and invalid config set a non-zero exit code after printing the compact status context and next step/error. Missing Git repository is reported in the Git section but does not fail the command, because it is a recoverable setup state.
 
 Suggested initial output:
 

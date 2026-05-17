@@ -17,6 +17,7 @@ Status:
 - Documents are written one file per document.
 - Local Git snapshot workflow exists through separate `backup`, `commit`, and `snapshot` commands.
 - File-level change inspection exists through `changes` and `changes --last <window>`.
+- Local recovery health inspection exists through `status`.
 - Document and collection history inspection exists through `history <path>`.
 - Dry-run recovery inspection exists through `restore-preview <path> --from <commit>`.
 - Local backup-file recovery exists through `restore-local <path> --from <commit> --confirm`.
@@ -37,6 +38,7 @@ Next work:
 - Add non-emulator unit tests for pure path and Git parsing helpers.
 - Review first npm prerelease feedback before widening restore scope.
 - Dogfood against real non-critical Firestore projects before expanding restore behavior.
+- Expand `status` automation awareness without adding network dependencies.
 
 ## MVP
 
