@@ -82,8 +82,9 @@ Current implementation notes:
 - `loadConfig` reads and parses `firevault.config.json`.
 - Firebase initialization expects `serviceAccountPath`.
 - `firevault init` guides setup, validates required fields, checks Git state before writing, and updates `.gitignore` without overwriting existing entries.
+- `firevault init` can suggest project IDs from local Firebase config files and likely service account paths from local filenames.
 - `firevault init --force` allows dirty Git state and config overwrite with a warning.
-- `firevault init --yes` provides a non-interactive path for tests and automation.
+- `firevault init --yes` provides a deterministic non-interactive path for tests and automation, using a detected project ID if one is available and skipping Firebase collection listing.
 
 ## Init Safety
 
@@ -94,11 +95,15 @@ Behavior:
 - prints the Firevault identity before prompting,
 - detects whether the current directory is inside a Git repository,
 - offers `git init` when no repository exists,
+- scans common local Firebase files for project ID candidates,
+- shows detected project ID candidates with their source files,
+- suggests likely service account paths without reading or printing private key contents,
 - prints the Firebase Console Admin SDK service account URL for the entered project ID,
 - explains where to save the manually downloaded service account key,
+- optionally lists top-level Firestore collections only after telling the user and only when the selected service account file exists,
 - refuses to run in a dirty Git working tree unless `--force` is provided,
 - refuses to overwrite `firevault.config.json` unless `--force` is provided,
-- appends `.gitignore` safety entries without duplicating existing lines,
+- appends `.gitignore` safety entries, including the selected service account path, without duplicating existing lines,
 - never creates service accounts, opens browsers, runs `gcloud`, commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
 
 ## Firebase Access

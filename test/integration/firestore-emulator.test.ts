@@ -5,6 +5,7 @@ import path from "node:path";
 import { after, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import admin from "firebase-admin";
+import { listFirestoreCollections } from "../../src/init/listCollections.js";
 
 const projectRoot = path.resolve(import.meta.dirname, "../..");
 const cliPath = path.join(projectRoot, "src/index.ts");
@@ -243,5 +244,19 @@ describe("Firestore emulator integration", () => {
 
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Missing required option: --confirm/);
+  });
+
+  it("init collection detection lists top-level collections from emulator Firestore", async () => {
+    const repo = makeTempRepo();
+    const serviceAccountPath = path.join(repo, "serviceAccountKey.json");
+    const db = getDb();
+
+    writeFileSync(serviceAccountPath, "{}\n");
+    await db.collection("orders").doc("order-1").set({ total: 42 });
+    await db.collection("users").doc("user-1").set({ name: "Ada" });
+
+    const collections = await listFirestoreCollections(projectId, serviceAccountPath);
+
+    assert.deepEqual(collections, ["orders", "users"]);
   });
 });

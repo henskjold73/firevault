@@ -49,6 +49,10 @@ firevault init
 
 `firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It also checks Git state before writing files and appends safety entries to `.gitignore`.
 
+During setup, Firevault looks for likely Firebase project IDs in local files such as `.env.local`, `.env.development`, `firebase.json`, and common Firebase config files. Detection is best-effort and transparent: if Firevault finds candidates, it shows where they came from and lets you accept one or enter a value manually.
+
+Firevault also looks for likely local service account files such as `serviceAccountKey.json`, `service-account.json`, `firebase-service-account.json`, and `credentials/firebase.json`. It never prints private key contents. If you select a service account path, Firevault adds that path to `.gitignore`.
+
 After you enter a project ID, Firevault prints the direct Firebase Console URL for that project's Admin SDK service account page:
 
 ```txt
@@ -62,6 +66,8 @@ Download the JSON key and save it as:
 ```
 
 Firevault does not create service accounts, open a browser, run `gcloud`, or authenticate against Firebase during setup.
+
+If the selected service account file already exists, Firevault can optionally connect to Firestore and list top-level collections so you can choose which ones to back up. If the file is missing or Firebase access fails, init continues and you can enter collections manually.
 
 Generated `firevault.config.json`:
 

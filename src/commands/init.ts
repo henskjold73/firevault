@@ -13,6 +13,13 @@ import {
   initGitRepository,
   isInsideGitRepository,
 } from "../git/git.js";
+import {
+  detectFirebaseProjectCandidates,
+  uniqueProjectIds,
+} from "../init/detectFirebaseProject.js";
+import type { FirebaseProjectCandidate } from "../init/detectFirebaseProject.js";
+import { detectServiceAccountPaths } from "../init/detectServiceAccount.js";
+import { listFirestoreCollections } from "../init/listCollections.js";
 
 interface InitOptions {
   force?: boolean;
@@ -58,7 +65,8 @@ function validateConfig(config: InitConfig): void {
 function parseCollections(value: string): string[] {
   return value
     .split(",")
-    .map((collection) => collection.trim());
+    .map((collection) => collection.trim())
+    .filter((collection) => collection !== "");
 }
 
 function getServiceAccountUrl(projectId: string): string {
@@ -95,41 +103,233 @@ function printMissingServiceAccountInfo(serviceAccountPath: string): void {
   console.log("");
 }
 
+function gitignorePathFor(filePath: string): string {
+  return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function printDetectedProjectCandidates(
+  candidates: FirebaseProjectCandidate[],
+): void {
+  if (candidates.length === 0) {
+    return;
+  }
+
+  console.log("Detected Firebase project IDs:");
+  console.log("");
+
+  candidates.forEach((candidate, index) => {
+    console.log(
+      `${index + 1}. ${candidate.projectId} from ${candidate.source}`,
+    );
+  });
+
+  console.log("");
+}
+
+async function promptForProjectId(
+  rl: PromptInterface,
+  candidates: FirebaseProjectCandidate[],
+): Promise<string> {
+  const projectIds = uniqueProjectIds(candidates);
+
+  if (projectIds.length === 0) {
+    return (await rl.question("Firebase project ID: ")).trim();
+  }
+
+  printDetectedProjectCandidates(candidates);
+
+  if (projectIds.length === 1) {
+    return (
+      await rl.question(`Firebase project ID (${projectIds[0]}): `)
+    ).trim() || projectIds[0];
+  }
+
+  const answer = (
+    await rl.question("Select Firebase project ID by number or enter one manually: ")
+  ).trim();
+  const selection = Number(answer);
+
+  if (Number.isInteger(selection) && selection >= 1 && selection <= candidates.length) {
+    return candidates[selection - 1].projectId;
+  }
+
+  return answer;
+}
+
+function suggestedServiceAccountPath(detectedPaths: string[]): string {
+  return detectedPaths[0] ?? defaultConfig.serviceAccountPath;
+}
+
+function printDetectedServiceAccounts(detectedPaths: string[]): void {
+  if (detectedPaths.length === 0) {
+    return;
+  }
+
+  console.log("Detected possible service account files:");
+  console.log("");
+
+  detectedPaths.forEach((filePath, index) => {
+    console.log(`${index + 1}. ${filePath}`);
+  });
+
+  console.log("");
+}
+
+async function promptForServiceAccountPath(
+  rl: PromptInterface,
+  detectedPaths: string[],
+): Promise<string> {
+  printDetectedServiceAccounts(detectedPaths);
+
+  const suggestedPath = suggestedServiceAccountPath(detectedPaths);
+  const answer = (
+    await rl.question(`Service account path (${suggestedPath}): `)
+  ).trim();
+  const selection = Number(answer);
+
+  if (
+    detectedPaths.length > 0 &&
+    Number.isInteger(selection) &&
+    selection >= 1 &&
+    selection <= detectedPaths.length
+  ) {
+    return detectedPaths[selection - 1];
+  }
+
+  return answer || suggestedPath;
+}
+
+function parseSelectedCollections(inputValue: string, detectedCollections: string[]): string[] {
+  const selectedCollections: string[] = [];
+
+  for (const item of inputValue.split(",")) {
+    const value = item.trim();
+
+    if (value === "") {
+      continue;
+    }
+
+    const selection = Number(value);
+
+    if (
+      Number.isInteger(selection) &&
+      selection >= 1 &&
+      selection <= detectedCollections.length
+    ) {
+      selectedCollections.push(detectedCollections[selection - 1]);
+      continue;
+    }
+
+    selectedCollections.push(value);
+  }
+
+  return [...new Set(selectedCollections)];
+}
+
+async function promptForCollectionListing(
+  rl: PromptInterface,
+  projectId: string,
+  serviceAccountPath: string,
+): Promise<string[] | undefined> {
+  if (!existsSync(serviceAccountPath)) {
+    console.log(
+      `Service account file is not present, so collection detection is skipped: ${serviceAccountPath}`,
+    );
+    console.log("");
+    return undefined;
+  }
+
+  const answer = (
+    await rl.question("Try to list Firestore collections with this service account? (y/N): ")
+  )
+    .trim()
+    .toLowerCase();
+
+  if (answer !== "y" && answer !== "yes") {
+    return undefined;
+  }
+
+  console.log("Connecting to Firestore to list top-level collections...");
+
+  let detectedCollections: string[];
+
+  try {
+    detectedCollections = await listFirestoreCollections(projectId, serviceAccountPath);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.log(`Could not list Firestore collections: ${message}`);
+    console.log("You can enter collection names manually.");
+    console.log("");
+    return undefined;
+  }
+
+  if (detectedCollections.length === 0) {
+    console.log("No top-level Firestore collections were detected.");
+    console.log("");
+    return undefined;
+  }
+
+  console.log("");
+  console.log("Detected Firestore collections:");
+  console.log("");
+  detectedCollections.forEach((collection, index) => {
+    console.log(`${index + 1}. ${collection}`);
+  });
+  console.log("");
+
+  const selected = (
+    await rl.question("Collections to back up, comma-separated numbers or names: ")
+  ).trim();
+
+  if (selected === "") {
+    return undefined;
+  }
+
+  return parseSelectedCollections(selected, detectedCollections);
+}
+
 type PromptInterface = ReturnType<typeof createInterface>;
 
 async function promptForConfig(
   options: InitOptions,
   rl?: PromptInterface,
 ): Promise<InitConfig> {
+  const projectCandidates = detectFirebaseProjectCandidates();
+  const serviceAccountPaths = detectServiceAccountPaths();
+
   if (options.yes) {
-    return defaultConfig;
+    return {
+      ...defaultConfig,
+      projectId: uniqueProjectIds(projectCandidates)[0] ?? defaultConfig.projectId,
+    };
   }
 
   if (!rl) {
     throw new Error("Prompt interface is required for interactive init.");
   }
 
-  const projectId = (
-    await rl.question("Firebase project ID: ")
-  ).trim();
+  const projectId = await promptForProjectId(rl, projectCandidates);
 
   if (projectId !== "") {
     printServiceAccountGuidance(projectId, defaultConfig.serviceAccountPath);
   }
 
-  const serviceAccountPath =
-    (
-      await rl.question(
-        `Service account path (${defaultConfig.serviceAccountPath}): `,
-      )
-    ).trim() || defaultConfig.serviceAccountPath;
+  const serviceAccountPath = await promptForServiceAccountPath(
+    rl,
+    serviceAccountPaths,
+  );
   const outputDir =
     (
       await rl.question(`Output directory (${defaultConfig.outputDir}): `)
     ).trim() || defaultConfig.outputDir;
-  const collectionsInput = (
-    await rl.question("Collections, comma-separated: ")
-  ).trim();
+  const detectedCollections = await promptForCollectionListing(
+    rl,
+    projectId,
+    serviceAccountPath,
+  );
+  const collectionsInput = detectedCollections
+    ? detectedCollections.join(",")
+    : (await rl.question("Collections, comma-separated: ")).trim();
 
   return {
     projectId,
@@ -171,7 +371,9 @@ function ensureGitignoreEntries(entries: string[]): void {
       .map((line) => line.trim())
       .filter((line) => line !== ""),
   );
-  const missingEntries = entries.filter((entry) => !existingLines.has(entry));
+  const missingEntries = [...new Set(entries)].filter(
+    (entry) => !existingLines.has(entry),
+  );
 
   if (missingEntries.length === 0) {
     return;
@@ -233,6 +435,7 @@ export async function runInit(options: InitOptions): Promise<void> {
 
     ensureGitignoreEntries([
       "serviceAccountKey.json",
+      gitignorePathFor(config.serviceAccountPath),
       "firestore-backups/",
       "firestore-debug.log",
     ]);
