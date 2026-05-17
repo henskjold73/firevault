@@ -39,6 +39,7 @@ Next work:
 - Review first npm prerelease feedback before widening restore scope.
 - Dogfood against real non-critical Firestore projects before expanding restore behavior.
 - Expand `status` automation awareness without adding network dependencies.
+- Add local GitHub Actions workflow generation for scheduled offsite snapshots without GitHub API calls.
 
 ## MVP
 
