@@ -51,10 +51,12 @@ function getDb(): FirebaseFirestore.Firestore {
 
 function makeTempRepo(): string {
   const dir = mkdtempSync(path.join(tmpdir(), "firevault-test-"));
+  const workspace = path.join(dir, ".firevault");
   tempRoots.push(dir);
+  mkdirSync(workspace, { recursive: true });
 
   writeFileSync(
-    path.join(dir, "firevault.config.json"),
+    path.join(workspace, "config.json"),
     JSON.stringify(
       {
         projectId,
@@ -68,12 +70,17 @@ function makeTempRepo(): string {
   );
 
   execFileSync("git", ["init"], { cwd: dir, stdio: "ignore" });
+  execFileSync("git", ["init"], { cwd: workspace, stdio: "ignore" });
   execFileSync("git", ["config", "user.email", "firevault-test@example.com"], {
-    cwd: dir,
+    cwd: workspace,
   });
-  execFileSync("git", ["config", "user.name", "Firevault Test"], { cwd: dir });
+  execFileSync("git", ["config", "user.name", "Firevault Test"], { cwd: workspace });
 
   return dir;
+}
+
+function workspacePath(repo: string): string {
+  return path.join(repo, ".firevault");
 }
 
 function runFirevault(
@@ -143,7 +150,7 @@ describe("Firestore emulator integration", () => {
     assert.match(result.stdout, /Exported 1 docs from users/);
     assert.equal(
       readFileSync(
-        path.join(repo, "firestore-backups/users/abc123.json"),
+        path.join(repo, ".firevault/firestore-backups/users/abc123.json"),
         "utf-8",
       ),
       '{\n  "active": true,\n  "name": "Ada"\n}',
@@ -167,7 +174,7 @@ describe("Firestore emulator integration", () => {
     assert.equal(result.status, 0);
     assert.equal(
       readFileSync(
-        path.join(repo, "firestore-backups/users/sorted.json"),
+        path.join(repo, ".firevault/firestore-backups/users/sorted.json"),
         "utf-8",
       ),
       '{\n  "a": {\n    "a": 1,\n    "z": 3\n  },\n  "z": 2\n}',
@@ -178,20 +185,22 @@ describe("Firestore emulator integration", () => {
     const repo = makeTempRepo();
     const db = getDb();
 
-    mkdirSync(path.join(repo, "firestore-backups/users"), { recursive: true });
+    const workspace = workspacePath(repo);
+
+    mkdirSync(path.join(workspace, "firestore-backups/users"), { recursive: true });
     writeFileSync(
-      path.join(repo, "firestore-backups/users/abc123.json"),
+      path.join(workspace, "firestore-backups/users/abc123.json"),
       '{\n  "name": "Ada",\n  "version": 1\n}',
     );
-    git(repo, ["add", "firevault.config.json", "firestore-backups"]);
-    git(repo, ["commit", "-m", "initial-backup"]);
+    git(workspace, ["add", "config.json", "firestore-backups"]);
+    git(workspace, ["commit", "-m", "initial-backup"]);
 
     writeFileSync(
-      path.join(repo, "firestore-backups/users/abc123.json"),
+      path.join(workspace, "firestore-backups/users/abc123.json"),
       '{\n  "name": "Ada Lovelace",\n  "version": 2\n}',
     );
-    git(repo, ["add", "firestore-backups"]);
-    git(repo, ["commit", "-m", "updated-backup"]);
+    git(workspace, ["add", "firestore-backups"]);
+    git(workspace, ["commit", "-m", "updated-backup"]);
 
     await db.collection("users").doc("abc123").set({
       name: "Current",
@@ -216,7 +225,7 @@ describe("Firestore emulator integration", () => {
       version: 1,
     });
 
-    assert.equal(git(repo, ["log", "--oneline"]).trim().split("\n").length, 2);
+    assert.equal(git(workspace, ["log", "--oneline"]).trim().split("\n").length, 2);
   });
 
   it("restore-firestore rejects collection paths", () => {
@@ -248,7 +257,7 @@ describe("Firestore emulator integration", () => {
 
   it("init collection detection lists top-level collections from emulator Firestore", async () => {
     const repo = makeTempRepo();
-    const serviceAccountPath = path.join(repo, "serviceAccountKey.json");
+    const serviceAccountPath = path.join(repo, ".firevault/serviceAccountKey.json");
     const db = getDb();
 
     writeFileSync(serviceAccountPath, "{}\n");

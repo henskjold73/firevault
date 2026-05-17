@@ -6,7 +6,7 @@ export async function runBackup(): Promise<void> {
   const config = loadConfig();
 
   for (const collection of config.collections) {
-    await exportCollection(config.outputDir, collection);
+    await exportCollection(config.outputDirPath, collection);
   }
 
   console.log("Backup complete.");

@@ -27,21 +27,16 @@ The architecture should optimize for:
 ## Current Project Structure
 
 ```txt
-src/
-  commands/
-    init.ts
-    backup.ts
-  config/
-    loadConfig.ts
-  firestore/
-    exportFirestore.ts
-    firebase.ts
-    stableStringify.ts
-  git/
-  index.ts
-firevault.config.json
-package.json
-tsconfig.json
+my-app/
+  src/
+  firebase.ts
+  .env.local
+  .gitignore
+  .firevault/
+    config.json
+    firestore-backups/
+    .git/
+    .gitignore
 ```
 
 ## Command Layer
@@ -52,19 +47,25 @@ Current commands:
 
 - `firevault init`
 - `firevault backup`
+- `firevault commit`
+- `firevault snapshot`
+- `firevault changes`
+- `firevault history`
+- `firevault restore-preview`
+- `firevault restore-local`
+- `firevault restore-firestore`
 
 Expected future commands:
 
 ```bash
-firevault backup
-firevault changes --last 24h
 firevault diff users/abc123
-firevault restore users/abc123 --from HEAD~3
 ```
 
 ## Configuration
 
-Configuration is loaded from `firevault.config.json`.
+Configuration is loaded from `.firevault/config.json`.
+
+Firevault 0.2 uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace. There is no backward compatibility with the old root-based `firevault.config.json` prerelease model.
 
 Intended shape:
 
@@ -79,9 +80,10 @@ Intended shape:
 
 Current implementation notes:
 
-- `loadConfig` reads and parses `firevault.config.json`.
-- Firebase initialization expects `serviceAccountPath`.
-- `firevault init` guides setup, validates required fields, checks Git state before writing, and updates `.gitignore` without overwriting existing entries.
+- `loadConfig` walks upward from the current directory, finds the nearest `.firevault/config.json`, and treats that `.firevault` directory as the workspace root.
+- Config-relative paths resolve from the workspace root.
+- Firebase initialization expects `serviceAccountPath` relative to `.firevault/`.
+- `firevault init` guides setup, validates required fields, checks Git state before writing, creates `.firevault/`, and updates `.gitignore` files without overwriting existing entries.
 - `firevault init` can suggest project IDs from local Firebase config files and likely service account paths from local filenames.
 - `firevault init --force` allows dirty Git state and config overwrite with a warning.
 - `firevault init --yes` provides a deterministic non-interactive path for tests and automation, using a detected project ID if one is available and skipping Firebase collection listing.
@@ -93,8 +95,8 @@ Current implementation notes:
 Behavior:
 
 - prints the Firevault identity before prompting,
-- detects whether the current directory is inside a Git repository,
-- offers `git init` when no repository exists,
+- detects whether the app directory is inside a Git repository,
+- offers to initialize Git inside `.firevault/`,
 - scans common local Firebase files for project ID candidates,
 - shows detected project ID candidates with their source files,
 - suggests likely service account paths without reading or printing private key contents,
@@ -102,8 +104,9 @@ Behavior:
 - explains where to save the manually downloaded service account key,
 - optionally lists top-level Firestore collections only after telling the user and only when the selected service account file exists,
 - refuses to run in a dirty Git working tree unless `--force` is provided,
-- refuses to overwrite `firevault.config.json` unless `--force` is provided,
-- appends `.gitignore` safety entries, including the selected service account path, without duplicating existing lines,
+- refuses to overwrite `.firevault/config.json` unless `--force` is provided,
+- adds `.firevault/` to the parent app repo `.gitignore` when the parent is a Git repo,
+- appends `.firevault/.gitignore` safety entries, including the selected service account path, without duplicating existing lines,
 - never creates service accounts, opens browsers, runs `gcloud`, commits, pushes, creates GitHub repositories, contacts Firebase, or writes secrets.
 
 ## Firebase Access
@@ -119,6 +122,17 @@ Design constraints:
 - use manually managed service account credentials,
 - do not introduce credential brokerage, hosted auth, or account systems,
 - avoid committing service account files.
+
+## Workspace Boundary
+
+The app repo and Firevault recovery repo are separate:
+
+- app repo: application source code and normal development history,
+- `.firevault` repo: Firestore recovery config, backup JSON, and recovery history.
+
+Operational commands work from the app root or from inside `.firevault/` by discovering the nearest `.firevault/config.json`. Git commands run with `.firevault/` as their working directory so `firevault commit`, `changes`, `history`, and restore previews cannot stage or inspect unrelated app source files.
+
+`firestore-backups/` is not ignored inside `.firevault/` by default. The `.firevault` repository exists to commit backup data.
 
 ## Emulator Tests
 
@@ -153,7 +167,7 @@ Current backup flow:
 1. Load config.
 2. Iterate configured collections.
 3. Fetch each collection through Firebase Admin SDK.
-4. Write each document to `<outputDir>/<collection>/<documentId>.json`.
+4. Write each document to `.firevault/<outputDir>/<collection>/<documentId>.json`.
 5. Serialize document data using deterministic JSON.
 
 The current exporter handles configured top-level collections. Subcollections, deletes, metadata, timestamps, references, and special Firestore value types need explicit design before production use.
@@ -174,6 +188,8 @@ Serialization rules should remain boring and predictable:
 ## Git Boundary
 
 Git is the storage and history engine. Firevault should wrap Git workflows rather than reimplement versioning.
+
+For Firevault 0.2, Git operations are scoped to the `.firevault` workspace repository, not the parent app repository.
 
 Near-term Git integration should focus on:
 

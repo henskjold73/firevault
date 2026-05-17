@@ -26,7 +26,8 @@ Status:
 - npm prerelease packaging is guarded by package file whitelisting and pack verification.
 - Local npm prerelease publishing is guarded by a `gitversionjs`-based publish script with clean-tree, build, emulator-test, pack, and forbidden-path checks.
 - Public GitHub release docs cover quick start, security, contributing, and issue triage.
-- Guided `firevault init` validates setup input, checks Git state, suggests local Firebase project settings, optionally lists Firestore collections, and applies `.gitignore` safety entries.
+- Firevault 0.2 uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace as a breaking prerelease change.
+- Guided `firevault init` validates setup input, checks Git state, suggests local Firebase project settings, optionally lists Firestore collections, creates `.firevault/`, and applies workspace `.gitignore` safety entries.
 
 Next work:
 

@@ -151,7 +151,7 @@ function npmSafeVersion(rawVersion: string, currentVersion: string): string {
   }
 
   if (current.prereleaseName === "beta") {
-    return `${current.major}.${current.minor}.${current.patch}-beta.${(current.prereleaseNumber ?? -1) + 1}`;
+    return `${current.major}.${current.minor}.${current.patch}-beta.${current.prereleaseNumber ?? 0}`;
   }
 
   return `${current.major}.${current.minor}.${current.patch}-beta.0`;

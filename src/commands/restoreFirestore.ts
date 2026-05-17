@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { Command } from "commander";
-import { ConfigError, loadConfig } from "../config/loadConfig.js";
+import { ConfigError, loadConfig, resolveWorkspacePath } from "../config/loadConfig.js";
 import { FirestoreError, writeDocument } from "../firestore/writeDocument.js";
 import {
   GitError,
@@ -116,13 +116,18 @@ export async function runRestoreFirestore(
   const config = loadConfig();
   const target = getFirestoreTarget(inputPath, config.outputDir);
 
-  assertInsideGitRepository();
+  assertInsideGitRepository(config.workspaceRoot);
 
-  const restoredContent = showFileAtCommit(options.from, target.backupPath);
+  const restoredContent = showFileAtCommit(
+    options.from,
+    target.backupPath,
+    config.workspaceRoot,
+  );
   const restoredData = parseRestoreJson(restoredContent, target.backupPath);
-  const currentExists = existsSync(target.backupPath);
+  const targetFilePath = resolveWorkspacePath(config.workspaceRoot, target.backupPath);
+  const currentExists = existsSync(targetFilePath);
   const currentContent = currentExists
-    ? readFileSync(target.backupPath, "utf-8")
+    ? readFileSync(targetFilePath, "utf-8")
     : undefined;
   const diff = buildLineDiff(currentContent, restoredContent);
 

@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.1.1-beta.1 - Unreleased
+## 0.2.0-beta.0 - Unreleased
+
+Breaking prerelease change:
+
+- Firevault now uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace.
+- Firevault backup history now lives in the `.firevault` Git repository instead of the parent app repo.
+- Config-relative paths now resolve from `.firevault/`.
+- `firevault init` no longer creates root `firevault.config.json`.
+- `firestore-backups/` is no longer ignored inside `.firevault/` by default.
+
+## 0.1.1-beta.1
 
 - Added guided `firevault init` setup with prompts for project ID, service account path, output directory, and collections.
 - Added init Git safety checks, `--force`, and `--yes`.

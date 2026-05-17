@@ -20,9 +20,10 @@ export class GitError extends Error {
   }
 }
 
-function runGit(args: string[]): string {
+function runGit(args: string[], cwd = process.cwd()): string {
   try {
     return execFileSync("git", args, {
+      cwd,
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -41,30 +42,30 @@ function runGit(args: string[]): string {
   }
 }
 
-export function isInsideGitRepository(): boolean {
+export function isInsideGitRepository(cwd = process.cwd()): boolean {
   try {
-    return runGit(["rev-parse", "--is-inside-work-tree"]).trim() === "true";
+    return runGit(["rev-parse", "--is-inside-work-tree"], cwd).trim() === "true";
   } catch {
     return false;
   }
 }
 
-export function assertInsideGitRepository(): void {
-  if (!isInsideGitRepository()) {
+export function assertInsideGitRepository(cwd = process.cwd()): void {
+  if (!isInsideGitRepository(cwd)) {
     throw new GitError("Current directory is not inside a Git repository.");
   }
 }
 
-export function initGitRepository(): void {
-  runGit(["init"]);
+export function initGitRepository(cwd = process.cwd()): void {
+  runGit(["init"], cwd);
 }
 
-export function hasWorkingTreeChanges(): boolean {
-  return runGit(["status", "--porcelain"]).trim() !== "";
+export function hasWorkingTreeChanges(cwd = process.cwd()): boolean {
+  return runGit(["status", "--porcelain"], cwd).trim() !== "";
 }
 
-export function hasChangesUnder(path: string): boolean {
-  return runGit(["status", "--porcelain", "--ignored", "--", path]).trim() !== "";
+export function hasChangesUnder(path: string, cwd = process.cwd()): boolean {
+  return runGit(["status", "--porcelain", "--ignored", "--", path], cwd).trim() !== "";
 }
 
 function emptyFileChanges(): FileChanges {
@@ -107,8 +108,8 @@ function normalizeFileChanges(changes: FileChanges): FileChanges {
   };
 }
 
-export function getWorkingTreeChanges(path: string): FileChanges {
-  const output = runGit(["status", "--porcelain", "--", path]);
+export function getWorkingTreeChanges(path: string, cwd = process.cwd()): FileChanges {
+  const output = runGit(["status", "--porcelain", "--", path], cwd);
   const changes = emptyFileChanges();
 
   for (const line of output.split("\n")) {
@@ -125,7 +126,11 @@ export function getWorkingTreeChanges(path: string): FileChanges {
   return normalizeFileChanges(changes);
 }
 
-export function getHistoricalChanges(path: string, since: string): FileChanges {
+export function getHistoricalChanges(
+  path: string,
+  since: string,
+  cwd = process.cwd(),
+): FileChanges {
   const output = runGit([
     "log",
     `--since=${since}`,
@@ -133,7 +138,7 @@ export function getHistoricalChanges(path: string, since: string): FileChanges {
     "--format=",
     "--",
     path,
-  ]);
+  ], cwd);
   const changes = emptyFileChanges();
 
   for (const line of output.split("\n")) {
@@ -153,9 +158,13 @@ export function getHistoricalChanges(path: string, since: string): FileChanges {
   return normalizeFileChanges(changes);
 }
 
-export function getHistory(path: string, includeChangedFileCount: boolean): HistoryEntry[] {
+export function getHistory(
+  path: string,
+  includeChangedFileCount: boolean,
+  cwd = process.cwd(),
+): HistoryEntry[] {
   const format = "%h%x09%cs%x09%s";
-  const output = runGit(["log", `--format=${format}`, "--name-only", "--", path]);
+  const output = runGit(["log", `--format=${format}`, "--name-only", "--", path], cwd);
   const entries: HistoryEntry[] = [];
   let current: HistoryEntry | undefined;
   let changedFiles = new Set<string>();
@@ -198,18 +207,18 @@ export function getHistory(path: string, includeChangedFileCount: boolean): Hist
   return entries;
 }
 
-export function showFileAtCommit(commit: string, path: string): string {
+export function showFileAtCommit(commit: string, path: string, cwd = process.cwd()): string {
   try {
-    return runGit(["show", `${commit}:${path}`]);
+    return runGit(["show", `${commit}:${path}`], cwd);
   } catch {
     throw new GitError(`File not found at ${commit}: ${path}`);
   }
 }
 
-export function stagePath(path: string): void {
-  runGit(["add", "-f", "--", path]);
+export function stagePath(path: string, cwd = process.cwd()): void {
+  runGit(["add", "-f", "--", path], cwd);
 }
 
-export function commitPath(message: string, path: string): void {
-  runGit(["commit", "-m", message, "--", path]);
+export function commitPath(message: string, path: string, cwd = process.cwd()): void {
+  runGit(["commit", "-m", message, "--", path], cwd);
 }

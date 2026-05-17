@@ -25,9 +25,13 @@ export function runHistory(inputPath: string): void {
   const config = loadConfig();
   const normalizedPath = normalizeHistoryPath(inputPath, config.outputDir);
 
-  assertInsideGitRepository();
+  assertInsideGitRepository(config.workspaceRoot);
 
-  const entries = getHistory(normalizedPath.path, normalizedPath.isCollection);
+  const entries = getHistory(
+    normalizedPath.path,
+    normalizedPath.isCollection,
+    config.workspaceRoot,
+  );
 
   if (entries.length === 0) {
     console.log(`No history found for ${normalizedPath.path}.`);

@@ -16,7 +16,7 @@ const program = new Command();
 program
   .name("firevault")
   .description("Undo button for Firestore.")
-  .version("0.1.0");
+  .version("0.2.0-beta.0");
 
 program.addCommand(initCommand);
 program.addCommand(backupCommand);

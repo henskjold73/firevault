@@ -9,10 +9,10 @@ Firevault does not transmit Firestore data to a Firevault service. There is no h
 Data flow is local:
 
 ```txt
-Firestore -> local JSON files -> Git repository
+Firestore -> .firevault/firestore-backups -> .firevault Git repository
 ```
 
-`restore-firestore` writes directly from your local Git-backed backup data to the Firestore project configured in `firevault.config.json`.
+`restore-firestore` writes directly from your local Git-backed backup data to the Firestore project configured in `.firevault/config.json`.
 
 ## Service Accounts
 
@@ -27,14 +27,24 @@ Expectations:
 
 Recommended `.gitignore` entries:
 
+Parent app repo:
+
+```gitignore
+.firevault/
+```
+
+`.firevault/.gitignore`:
+
 ```gitignore
 serviceAccountKey.json
-firestore-backups/
+firestore-debug.log
+.env
+.env.*
 ```
 
 ## Backup Repository Security
 
-Firestore exports may contain sensitive application data. Users are responsible for securing backup repositories, local machines, CI logs, and any remote Git hosting used for backup history.
+Firestore exports may contain sensitive application data. Users are responsible for securing the `.firevault` repository, local machines, CI logs, and any remote Git hosting used for backup history.
 
 Recommended practices:
 

@@ -49,11 +49,11 @@ function normalizeLastWindow(last: string): string {
 export function runChanges(last?: string): void {
   const config = loadConfig();
 
-  assertInsideGitRepository();
+  assertInsideGitRepository(config.workspaceRoot);
 
   const changes = last
-    ? getHistoricalChanges(config.outputDir, normalizeLastWindow(last))
-    : getWorkingTreeChanges(config.outputDir);
+    ? getHistoricalChanges(config.outputDir, normalizeLastWindow(last), config.workspaceRoot)
+    : getWorkingTreeChanges(config.outputDir, config.workspaceRoot);
 
   printChanges(changes);
 }

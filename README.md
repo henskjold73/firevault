@@ -25,10 +25,12 @@ Current scope:
 Current export shape:
 
 ```txt
-firestore-backups/
-  users/
-    abc123.json
-    def456.json
+.firevault/
+  config.json
+  firestore-backups/
+    users/
+      abc123.json
+      def456.json
 ```
 
 The immediate priority is trustworthy document-level recovery: clear previews, explicit confirmation, and no broad destructive restore flows.
@@ -36,10 +38,11 @@ The immediate priority is trustworthy document-level recovery: clear previews, e
 ## Quick Start
 
 ```bash
-npm install -g firevault
+npm install -g firevault@next
+cd my-app
 ```
 
-Create a Firebase service account key for your Firestore project, save it as `serviceAccountKey.json`, and keep it out of Git.
+Firevault 0.2 uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace. The app repo stays focused on application source code; `.firevault/` contains Firevault config, backup JSON, credentials, and its own Git history.
 
 Run guided setup:
 
@@ -47,7 +50,7 @@ Run guided setup:
 firevault init
 ```
 
-`firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It also checks Git state before writing files and appends safety entries to `.gitignore`.
+`firevault init` asks for your Firebase project ID, service account path, output directory, and collections. It creates `.firevault/`, writes `.firevault/config.json`, writes `.firevault/.gitignore`, can initialize Git inside `.firevault/`, and adds `.firevault/` to the parent app repo `.gitignore` when the parent is a Git repo.
 
 During setup, Firevault looks for likely Firebase project IDs in local files such as `.env.local`, `.env.development`, `firebase.json`, and common Firebase config files. Detection is best-effort and transparent: if Firevault finds candidates, it shows where they came from and lets you accept one or enter a value manually.
 
@@ -62,14 +65,14 @@ https://console.firebase.google.com/project/your-project-id/settings/serviceacco
 
 Download the JSON key and save it as:
 
-./serviceAccountKey.json
+.firevault/serviceAccountKey.json
 ```
 
 Firevault does not create service accounts, open a browser, run `gcloud`, or authenticate against Firebase during setup.
 
 If the selected service account file already exists, Firevault can optionally connect to Firestore and list top-level collections so you can choose which ones to back up. If the file is missing or Firebase access fails, init continues and you can enter collections manually.
 
-Generated `firevault.config.json`:
+Generated `.firevault/config.json`:
 
 ```json
 {
@@ -85,6 +88,8 @@ Take a snapshot:
 ```bash
 firevault snapshot
 ```
+
+Operational commands discover the nearest `.firevault/config.json`, so they work from the app root or from inside `.firevault/`.
 
 Example output:
 
@@ -179,6 +184,12 @@ firevault snapshot
 
 Firevault operates against an existing Firebase project using a service account.
 
+Expected config path:
+
+```txt
+.firevault/config.json
+```
+
 Expected config shape:
 
 ```json
@@ -192,19 +203,28 @@ Expected config shape:
 
 Notes:
 
-- `serviceAccountPath` points to a local Firebase service account JSON file.
-- `outputDir` is where Firestore documents are written.
+- paths are relative to `.firevault/`,
+- `serviceAccountPath` points to a local Firebase service account JSON file,
+- `outputDir` is where Firestore documents are written inside `.firevault/`,
 - `collections` controls which top-level Firestore collections are exported.
 - Service account files must not be committed.
 
-Recommended `.gitignore` entries for local development:
+Parent app repo `.gitignore`:
+
+```gitignore
+.firevault/
+```
+
+`.firevault/.gitignore`:
 
 ```gitignore
 serviceAccountKey.json
-firestore-backups/
+firestore-debug.log
+.env
+.env.*
 ```
 
-`firevault init` adds these safety entries automatically. `firestore-backups/` is ignored by default so exported Firestore data is not committed accidentally with normal Git commands. Firevault can still commit the configured backup directory explicitly through `firevault commit` or `firevault snapshot`, and it stages only that directory.
+`firevault init` adds these safety entries automatically. In the 0.2 workspace model, `firestore-backups/` is not ignored inside `.firevault/` because the `.firevault` Git repo exists to track backup history.
 
 ## Commands
 
@@ -262,7 +282,7 @@ JSON output is stable:
 
 `firevault backup` exports configured Firestore collections to deterministic local JSON files. It does not stage or commit anything.
 
-`firevault commit` expects to run inside a Git repository.
+`firevault commit` commits inside the `.firevault` Git repository.
 
 Behavior:
 
@@ -270,6 +290,7 @@ Behavior:
 - exits successfully if no backup changes exist,
 - stages only the configured `outputDir`,
 - creates a local commit with message `backup: <ISO timestamp>`,
+- never stages app source files from the parent repo,
 - never pushes.
 
 Keep `serviceAccountKey.json` ignored so credentials cannot be committed by this workflow or by manual Git usage.

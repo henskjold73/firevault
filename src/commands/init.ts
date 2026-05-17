@@ -4,9 +4,11 @@ import { stdin as input, stdout as output } from "node:process";
 import {
   appendFileSync,
   existsSync,
+  mkdirSync,
   readFileSync,
   writeFileSync,
 } from "node:fs";
+import path from "node:path";
 import {
   GitError,
   hasWorkingTreeChanges,
@@ -39,6 +41,9 @@ const defaultConfig: InitConfig = {
   outputDir: "firestore-backups",
   collections: ["users"],
 };
+
+const workspaceDirName = ".firevault";
+const configFileName = "config.json";
 
 function validateConfig(config: InitConfig): void {
   if (config.projectId.trim() === "") {
@@ -88,18 +93,21 @@ function printServiceAccountGuidance(
   console.log("");
 }
 
-function printMissingServiceAccountInfo(serviceAccountPath: string): void {
+function printMissingServiceAccountInfo(
+  serviceAccountPath: string,
+  serviceAccountDisplayPath: string,
+): void {
   if (existsSync(serviceAccountPath)) {
     return;
   }
 
   console.log(
-    `Service account file does not exist yet: ${serviceAccountPath}`,
+    `Service account file does not exist yet: ${serviceAccountDisplayPath}`,
   );
   console.log(
     "That is expected before downloading the Firebase Admin SDK key.",
   );
-  console.log(`Save the downloaded JSON key at: ${serviceAccountPath}`);
+  console.log(`Save the downloaded JSON key at: ${serviceAccountDisplayPath}`);
   console.log("");
 }
 
@@ -230,10 +238,11 @@ async function promptForCollectionListing(
   rl: PromptInterface,
   projectId: string,
   serviceAccountPath: string,
+  serviceAccountDisplayPath: string,
 ): Promise<string[] | undefined> {
   if (!existsSync(serviceAccountPath)) {
     console.log(
-      `Service account file is not present, so collection detection is skipped: ${serviceAccountPath}`,
+      `Service account file is not present, so collection detection is skipped: ${serviceAccountDisplayPath}`,
     );
     console.log("");
     return undefined;
@@ -292,10 +301,11 @@ type PromptInterface = ReturnType<typeof createInterface>;
 
 async function promptForConfig(
   options: InitOptions,
+  workspaceRoot: string,
   rl?: PromptInterface,
 ): Promise<InitConfig> {
   const projectCandidates = detectFirebaseProjectCandidates();
-  const serviceAccountPaths = detectServiceAccountPaths();
+  const serviceAccountPaths = detectServiceAccountPaths(process.cwd(), workspaceRoot);
 
   if (options.yes) {
     return {
@@ -311,7 +321,10 @@ async function promptForConfig(
   const projectId = await promptForProjectId(rl, projectCandidates);
 
   if (projectId !== "") {
-    printServiceAccountGuidance(projectId, defaultConfig.serviceAccountPath);
+    printServiceAccountGuidance(
+      projectId,
+      path.join(workspaceDirName, defaultConfig.serviceAccountPath.replace(/^\.\//, "")),
+    );
   }
 
   const serviceAccountPath = await promptForServiceAccountPath(
@@ -322,10 +335,19 @@ async function promptForConfig(
     (
       await rl.question(`Output directory (${defaultConfig.outputDir}): `)
     ).trim() || defaultConfig.outputDir;
+  const serviceAccountAbsolutePath = path.resolve(
+    workspaceRoot,
+    serviceAccountPath,
+  );
+  const serviceAccountDisplayPath = path.relative(
+    process.cwd(),
+    serviceAccountAbsolutePath,
+  );
   const detectedCollections = await promptForCollectionListing(
     rl,
     projectId,
-    serviceAccountPath,
+    serviceAccountAbsolutePath,
+    serviceAccountDisplayPath,
   );
   const collectionsInput = detectedCollections
     ? detectedCollections.join(",")
@@ -352,7 +374,7 @@ async function promptForGitInit(
   }
 
   const answer = (
-    await rl.question("This directory is not a Git repository. Run git init? (Y/n): ")
+    await rl.question("Initialize Git inside .firevault? (Y/n): ")
   )
     .trim()
     .toLowerCase();
@@ -360,8 +382,7 @@ async function promptForGitInit(
   return answer === "" || answer === "y" || answer === "yes";
 }
 
-function ensureGitignoreEntries(entries: string[]): void {
-  const gitignorePath = ".gitignore";
+function ensureGitignoreEntries(gitignorePath: string, entries: string[]): void {
   const existing = existsSync(gitignorePath)
     ? readFileSync(gitignorePath, "utf-8")
     : "";
@@ -391,12 +412,15 @@ export async function runInit(options: InitOptions): Promise<void> {
   console.log("Undo button for Firestore.");
   console.log("");
 
-  const configPath = "firevault.config.json";
-  const alreadyInGitRepository = isInsideGitRepository();
+  const appRoot = process.cwd();
+  const workspaceRoot = path.join(appRoot, workspaceDirName);
+  const configPath = path.join(workspaceRoot, configFileName);
+  const parentIsGitRepository = isInsideGitRepository(appRoot);
+  const workspaceIsGitRepository = isInsideGitRepository(workspaceRoot);
   const rl = options.yes ? undefined : createInterface({ input, output });
 
   try {
-    if (alreadyInGitRepository && hasWorkingTreeChanges() && !options.force) {
+    if (parentIsGitRepository && hasWorkingTreeChanges(appRoot) && !options.force) {
       throw new Error(
         "Git working tree has changes. Commit, stash, or rerun with --force before init writes files.",
       );
@@ -404,47 +428,79 @@ export async function runInit(options: InitOptions): Promise<void> {
 
     if (existsSync(configPath) && !options.force) {
       throw new Error(
-        "firevault.config.json already exists. Rerun with --force to overwrite it.",
+        ".firevault/config.json already exists. Rerun with --force to overwrite it.",
       );
     }
 
-    const shouldInitGit = alreadyInGitRepository
+    const shouldInitGit = workspaceIsGitRepository
       ? false
       : await promptForGitInit(options, rl);
-    const config = await promptForConfig(options, rl);
+    const config = await promptForConfig(options, workspaceRoot, rl);
 
     config.collections = config.collections.map((collection) => collection.trim());
     validateConfig(config);
 
+    const serviceAccountAbsolutePath = path.resolve(
+      workspaceRoot,
+      config.serviceAccountPath,
+    );
+    const serviceAccountDisplayPath = path.relative(
+      appRoot,
+      serviceAccountAbsolutePath,
+    );
+
     if (options.yes) {
-      printServiceAccountGuidance(config.projectId, config.serviceAccountPath);
+      printServiceAccountGuidance(config.projectId, serviceAccountDisplayPath);
     }
 
-    printMissingServiceAccountInfo(config.serviceAccountPath);
+    printMissingServiceAccountInfo(
+      serviceAccountAbsolutePath,
+      serviceAccountDisplayPath,
+    );
+
+    mkdirSync(workspaceRoot, { recursive: true });
 
     if (shouldInitGit) {
-      initGitRepository();
-      console.log("Initialized Git repository.");
+      initGitRepository(workspaceRoot);
+      console.log("Initialized Git repository in .firevault.");
     }
 
     if (existsSync(configPath) && options.force) {
-      console.log("Warning: overwriting existing firevault.config.json.");
+      console.log("Warning: overwriting existing .firevault/config.json.");
     }
 
     writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
 
-    ensureGitignoreEntries([
-      "serviceAccountKey.json",
+    ensureGitignoreEntries(path.join(workspaceRoot, ".gitignore"), [
       gitignorePathFor(config.serviceAccountPath),
-      "firestore-backups/",
       "firestore-debug.log",
+      ".env",
+      ".env.*",
     ]);
 
-    console.log("Created firevault.config.json.");
-    console.log("Updated .gitignore safety entries.");
+    if (parentIsGitRepository) {
+      const parentIgnoreEntries = [".firevault/"];
+      const serviceAccountInAppRepo = path.relative(
+        appRoot,
+        serviceAccountAbsolutePath,
+      );
+
+      if (
+        !serviceAccountInAppRepo.startsWith("..") &&
+        !gitignorePathFor(serviceAccountInAppRepo).startsWith(".firevault/")
+      ) {
+        parentIgnoreEntries.push(gitignorePathFor(serviceAccountInAppRepo));
+      }
+
+      ensureGitignoreEntries(path.join(appRoot, ".gitignore"), parentIgnoreEntries);
+      console.log("Updated parent .gitignore safety entries.");
+    }
+
+    console.log("Created .firevault/config.json.");
+    console.log("Updated .firevault/.gitignore safety entries.");
     console.log("");
     console.log("Next steps:");
-    console.log(`1. Save your service account key at ${config.serviceAccountPath}`);
+    console.log(`1. Save your service account key at ${serviceAccountDisplayPath}`);
     console.log("2. Run `firevault snapshot`");
     console.log("3. Run `firevault changes`");
     console.log(

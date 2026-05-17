@@ -20,14 +20,14 @@ export function getFirestore() {
         return admin.firestore();
       }
 
-      if (!existsSync(config.serviceAccountPath)) {
+      if (!existsSync(config.serviceAccountPathAbsolute)) {
         throw new ConfigError(
           `Service account file not found: ${config.serviceAccountPath}`,
         );
       }
 
       serviceAccount = JSON.parse(
-        readFileSync(config.serviceAccountPath, "utf-8"),
+        readFileSync(config.serviceAccountPathAbsolute, "utf-8"),
       ) as admin.ServiceAccount;
 
       admin.initializeApp({

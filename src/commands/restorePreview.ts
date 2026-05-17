@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { Command } from "commander";
-import { ConfigError, loadConfig } from "../config/loadConfig.js";
+import { ConfigError, loadConfig, resolveWorkspacePath } from "../config/loadConfig.js";
 import {
   GitError,
   assertInsideGitRepository,
@@ -116,11 +116,12 @@ export function runRestorePreview(
   const config = loadConfig();
   const targetPath = normalizeDocumentPath(inputPath, config.outputDir);
 
-  assertInsideGitRepository();
+  assertInsideGitRepository(config.workspaceRoot);
 
-  const restoredContent = showFileAtCommit(options.from, targetPath);
-  const currentExists = existsSync(targetPath);
-  const currentContent = currentExists ? readFileSync(targetPath, "utf-8") : undefined;
+  const restoredContent = showFileAtCommit(options.from, targetPath, config.workspaceRoot);
+  const targetFilePath = resolveWorkspacePath(config.workspaceRoot, targetPath);
+  const currentExists = existsSync(targetFilePath);
+  const currentContent = currentExists ? readFileSync(targetFilePath, "utf-8") : undefined;
   const diff = buildLineDiff(currentContent, restoredContent);
 
   printRestorePreview(targetPath, options.from, currentExists, diff);

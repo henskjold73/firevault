@@ -11,17 +11,17 @@ import {
 export function runCommit(): void {
   const config = loadConfig();
 
-  assertInsideGitRepository();
+  assertInsideGitRepository(config.workspaceRoot);
 
-  if (!hasChangesUnder(config.outputDir)) {
+  if (!hasChangesUnder(config.outputDir, config.workspaceRoot)) {
     console.log(`No changes found under ${config.outputDir}.`);
     return;
   }
 
-  stagePath(config.outputDir);
+  stagePath(config.outputDir, config.workspaceRoot);
 
   const message = `backup: ${new Date().toISOString()}`;
-  commitPath(message, config.outputDir);
+  commitPath(message, config.outputDir, config.workspaceRoot);
 
   console.log(`Created commit: ${message}`);
 }
