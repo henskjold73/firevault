@@ -41,6 +41,7 @@ Next work:
 - Dogfood against real non-critical Firestore projects before expanding restore behavior.
 - Expand `status` automation awareness without adding network dependencies.
 - Validate and harden generated GitHub Actions workflow behavior through dogfooding.
+- Add local `doctor` validation for workspace safety, workflow correctness, Git remotes, and actionable fixes.
 
 ## MVP
 
