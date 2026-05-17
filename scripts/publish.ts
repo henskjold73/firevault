@@ -292,7 +292,7 @@ async function main(): Promise<void> {
     const packageJson = readPackageJson();
     await confirmPublish(packageJson.name, packageJson.version, options);
 
-    run("npm", ["publish", "--access", "public", "--tag", "next", "--cache", NPM_CACHE]);
+    run("npm", ["publish", "--ignore-scripts", "--access", "public", "--tag", "next", "--cache", NPM_CACHE]);
     console.log(`Published ${packResult.name ?? packageJson.name}@${packResult.version ?? packageJson.version} with dist-tag "next".`);
   } finally {
     if (options.dryRun) {

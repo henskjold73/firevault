@@ -455,9 +455,9 @@ The publish script:
 - runs clean, build, and emulator tests,
 - runs `npm pack --dry-run --cache /private/tmp/firevault-npm-cache`,
 - rejects forbidden package contents such as `serviceAccountKey.json`, `firestore-backups/`, `firestore-debug.log`, `src/`, `test/`, `firebase.json`, `firestore.rules`, and `.env` files,
-- publishes with `npm publish --access public --tag next --cache /private/tmp/firevault-npm-cache`.
+- publishes with `npm publish --ignore-scripts --access public --tag next --cache /private/tmp/firevault-npm-cache`.
 
-The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output. `prepublishOnly` currently runs clean, build, and emulator tests.
+The package `bin` points to `./dist/index.js`, so a published or linked package must include compiled output. `prepublishOnly` runs clean, build, and emulator tests as a safety net for manual `npm publish`. The guarded `publish:next` script runs those checks itself, then uses `--ignore-scripts` for the final publish step to avoid running the same build and test sequence twice.
 
 ## Product Principles
 
