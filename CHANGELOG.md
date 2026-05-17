@@ -1,17 +1,22 @@
 # Changelog
 
-## 0.2.0-beta.0 - Unreleased
+## 0.2.0-beta.1 - Unreleased
+
+- Added `firevault status` for compact local recovery health checks.
+- Added `firevault doctor` for actionable local setup validation.
+- Added `firevault setup-github-action` to generate a scheduled GitHub Actions workflow for offsite snapshots.
+- Added local workflow detection for generated GitHub Actions snapshot automation.
+
+## 0.2.0-beta.0
 
 Breaking prerelease change:
 
 - Firevault now uses `.firevault/config.json` and a dedicated `.firevault` recovery workspace.
 - Firevault backup history now lives in the `.firevault` Git repository instead of the parent app repo.
 - Config-relative paths now resolve from `.firevault/`.
+- Operational commands discover the nearest `.firevault/config.json` from the app root or from inside `.firevault/`.
 - `firevault init` no longer creates root `firevault.config.json`.
 - `firestore-backups/` is no longer ignored inside `.firevault/` by default.
-- Added `firevault setup-github-action` to generate a local scheduled GitHub Actions workflow for offsite snapshots.
-- Updated `firevault status` to detect the generated workspace workflow and scheduled trigger locally.
-- Added `firevault doctor` for local setup validation and actionable recovery workspace fixes.
 
 ## 0.1.1-beta.1
 
